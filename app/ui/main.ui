@@ -78,7 +78,7 @@
     <addaction name="actionExport"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuHelf">
+   <widget class="QMenu" name="menuTools">
     <property name="title">
      <string>Tools</string>
     </property>
@@ -93,7 +93,7 @@
     <addaction name="actionAbout"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuHelf"/>
+   <addaction name="menuTools"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="actionOpen">

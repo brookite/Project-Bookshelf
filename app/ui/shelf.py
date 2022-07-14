@@ -15,7 +15,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QSizePolicy, QWidget)
+from PySide6.QtWidgets import (QApplication, QGridLayout, QSizePolicy, QWidget)
 
 class Ui_Shelf(object):
     def setupUi(self, Shelf):
@@ -30,6 +30,8 @@ class Ui_Shelf(object):
         Shelf.setMinimumSize(QSize(256, 167))
         Shelf.setMaximumSize(QSize(16777215, 167))
         Shelf.setStyleSheet(u"")
+        self.gridLayout_2 = QGridLayout(Shelf)
+        self.gridLayout_2.setObjectName(u"gridLayout_2")
 
         self.retranslateUi(Shelf)
 
