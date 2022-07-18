@@ -21,14 +21,14 @@ class Ui_Shelf(object):
     def setupUi(self, Shelf):
         if not Shelf.objectName():
             Shelf.setObjectName(u"Shelf")
-        Shelf.resize(512, 167)
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        Shelf.resize(577, 167)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Shelf.sizePolicy().hasHeightForWidth())
         Shelf.setSizePolicy(sizePolicy)
         Shelf.setMinimumSize(QSize(256, 167))
-        Shelf.setMaximumSize(QSize(16777215, 167))
+        Shelf.setMaximumSize(QSize(16777215, 16777215))
         Shelf.setStyleSheet(u"")
         self.gridLayout_2 = QGridLayout(Shelf)
         self.gridLayout_2.setObjectName(u"gridLayout_2")

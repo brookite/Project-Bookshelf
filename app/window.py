@@ -1,5 +1,5 @@
 from PySide6.QtGui import QPalette, QPixmap, Qt, QMouseEvent, QDrag
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QGridLayout, QSizePolicy
+from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QGridLayout, QSizePolicy, QSpacerItem
 from app.ui.main import Ui_Bookshelf
 from app.ui.shelf import Ui_Shelf
 from app.utils.path import resolve_path
@@ -17,8 +17,7 @@ class BookWidget(QLabel):
             BookWidget.PIXMAP = QPixmap(resolve_path("resources", "dummybook.png"))
         self._thumbnail = BookWidget.PIXMAP
         self.setPixmap(BookWidget.PIXMAP)
-        self.setFixedSize(100, 126)
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed))
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
 
     @property
     def booksrc(self):
@@ -34,31 +33,34 @@ class ShelfWidget(QWidget, Ui_Shelf):
 
     def __init__(self):
         super().__init__()
-        self.capacity = 3
+        self.row_capacity = 3
         self.books: List[BookWidget] = []
         self.grid = QGridLayout()
+        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
         self.setLayout(self.grid)
         self.setupUi(self)
-        self.layout().setContentsMargins(1, 1, 1, 1)
-        self.layout().setSpacing(1)
+        #self.grid.setContentsMargins(0, 0, 0, 100)
+        self.grid.addItem(QSpacerItem(0, 0, QSizePolicy.Fixed, QSizePolicy.Expanding), 2**16, 0)
+        self.grid.setVerticalSpacing(50)
 
     def add_book(self, book: BookWidget) -> None:
-        if len(self.books) < self.capacity:
-            self.books.append(book)
-            self.layout().addWidget(book, 1, len(self.books) - 1)
+        row = len(self.books) // self.row_capacity
+        column = len(self.books) % self.row_capacity
+        self.books.append(book)
+        self.grid.addWidget(book, row, column)
+
 
 class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def __init__(self, app):
         super().__init__()
         self._app = app
-        self.rendered_shelfs = []
+        self.shelf = ShelfWidget()
         self.setupUi(self)
-        self.shelfLayout = QVBoxLayout()
         self.set_shelf_background()
-        self.scrollAreaWidgetContents.setLayout(self.shelfLayout)
+        self.scrollAreaWidgetContents.setLayout(self.shelf.grid)
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.load_shelfs()
+        self.load_books() # TODO: test
 
     def set_shelf_background(self):
         palette = QPalette()
@@ -67,23 +69,17 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         palette.setBrush(self.backgroundRole(), ShelfWidget.BACKGROUND)
         self.scrollAreaWidgetContents.setPalette(palette)
 
-    def load_shelfs(self):
-        for i in range(4):
-            shelf = ShelfWidget()
-            shelf.add_book(BookWidget())
-            shelf.add_book(BookWidget())
-            shelf.add_book(BookWidget())
-            self.rendered_shelfs.append(shelf)
-            self.shelfLayout.addWidget(shelf)
+    def load_books(self):
+        for i in range(300):
+            self.shelf.add_book(BookWidget())
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         super().mousePressEvent(event)
-        for shelf in self.rendered_shelfs:
-            for book in shelf.books:
-                if event.button() == Qt.LeftButton and book.geometry().contains(event.pos()):
-                    drag = QDrag(self)
-                    drag.setPixmap(book.thumbnail)
-                    drop_action = drag.exec()
+        for book in self.shelf.books:
+            if event.button() == Qt.LeftButton and book.geometry().contains(event.pos()):
+                drag = QDrag(self)
+                drag.setPixmap(book.thumbnail)
+                drop_action = drag.exec()
 
 
 
