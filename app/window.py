@@ -1,6 +1,6 @@
-from PySide6.QtCore import QMimeData, QRect, QPoint, QTimerEvent, QCoreApplication
+from PySide6.QtCore import QMimeData
 from PySide6.QtGui import QPalette, QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent
-from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
+from PySide6.QtWidgets import QMainWindow, QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
     QApplication
 from app.ui.main import Ui_Bookshelf
 from app.utils.path import resolve_path
@@ -68,21 +68,22 @@ class ShelfWidget(QWidget):
         self.books: List[BookWidget] = []
         self.grid = None
         self._initialSpacer = None
-        self._inititalize_grid()
+        self._initialize_grid()
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
 
-    def _inititalize_grid(self):
+    def _initialize_grid(self):
         if self.grid:
             while (child := self.grid.takeAt(0)) is not None:
                 if child.widget():
                     self.grid.removeWidget(child.widget())
+                    child.widget().setParent(None)
                 else:
                     self.grid.removeItem(child)
-            self.grid.deleteLater()
+        else:
+            self.grid = QGridLayout()
         self.current_row = 1
         self.previous_row = 0
-        self.grid = QGridLayout()
         self.grid.setSpacing(0)
         self._initialSpacer = QSpacerItem(0, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.grid.addItem(self._initialSpacer, 0, 0)
@@ -94,7 +95,7 @@ class ShelfWidget(QWidget):
         if len(self.books) >= ShelfWidget.MAX_BOOKS_COUNT:
             return
         row = len(self.books) // self.row_capacity
-        if len(self.books) > 3 and self._initialSpacer.maximumSize().height():
+        if len(self.books) > self.row_capacity and self._initialSpacer.maximumSize().height():
             self._initialSpacer.changeSize(0, 0, QSizePolicy.Fixed, QSizePolicy.Fixed)
         if self.previous_row != row:
             self.grid.addItem(QSpacerItem(0, 167, QSizePolicy.Fixed, QSizePolicy.Fixed), self.current_row, 0)
@@ -106,7 +107,7 @@ class ShelfWidget(QWidget):
         self.grid.addWidget(book, self.current_row, column)
 
     def render_books(self):
-        self._inititalize_grid()
+        self._initialize_grid()
         books = self.books
         self.books = []
         for book in books:
@@ -120,21 +121,17 @@ class ShelfWidget(QWidget):
     def dropEvent(self, event: QDropEvent) -> None:
         min_book = self._find_book_by_pos(event.pos())
         old_row, old_column = self._get_index_by_mime(event.mimeData())
-        self.get_book(old_row, old_column).show()
-        self.replace_book(old_row, old_column, *self.find_book(min_book))
+        if min_book:
+            self.get_book(old_row, old_column).show()
+            self.replace_book(old_row, old_column, *self.find_book(min_book))
+        else:
+            self.get_book(old_row, old_column).show()
         event.acceptProposedAction()
 
     def _find_book_by_pos(self, pos):
-        min_length = float("inf")
-        min_book = self
         for book in self.books:
             if book.geometry().contains(pos):
                 return book
-            point = pos - book.geometry().center()  # TODO: fix
-            if (length := point.manhattanLength()) < min_length:
-                min_length = length
-                min_book = book
-        return min_book
 
     def hide_book(self, book: BookWidget):
         book.hide()
@@ -142,7 +139,7 @@ class ShelfWidget(QWidget):
     def replace_book(self, old_row: int, old_column: int, row: int, column: int):
         old_index = self._book_index(old_row, old_column)
         new_index = self._book_index(row, column)
-
+        print("old", old_row, old_column)
         print(old_index, new_index)  # TODO: check whether correct
         self.books.insert(new_index, self.books[old_index])
         if old_index <= new_index:
@@ -154,6 +151,7 @@ class ShelfWidget(QWidget):
     def find_book(self, book: BookWidget):
         if book in self.books:
             i = self.books.index(book)
+            print("index list", i)
             return (i // self.row_capacity) + 1, i % self.row_capacity
         else:
             return -1, -1
@@ -165,11 +163,10 @@ class ShelfWidget(QWidget):
         row -= 1
         return row * self.row_capacity + column
 
-    def resize(self, width):
-        new_row_capacity = width // 128
-        print(new_row_capacity)
-        self.row_capacity = new_row_capacity
-        self.render_books()
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        if self.isVisible():
+            self.row_capacity = self.size().width() // 128
+            self.render_books()
 
     @staticmethod
     def _get_index_by_mime(mime: QMimeData):
@@ -201,13 +198,12 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         palette.setBrush(self.backgroundRole(), ShelfWidget.BACKGROUND)
         self.shelf.setPalette(palette)
 
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        if self.isVisible():
-            self.shelf.resize(event.size().width())
-
     def load_books(self):
-        for i in range(5):
-            self.shelf.add_book(BookWidget(self.shelf))
+        for i in range(7):
+            book = BookWidget(self.shelf)
+            book.setToolTip(str(i))
+            self.shelf.add_book(book)
+
 
 
 
