@@ -1,4 +1,4 @@
-from PySide6.QtCore import QMimeData, QRect, QPoint
+from PySide6.QtCore import QMimeData, QRect, QPoint, QTimerEvent, QCoreApplication
 from PySide6.QtGui import QPalette, QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent
 from PySide6.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
     QApplication
@@ -73,7 +73,15 @@ class ShelfWidget(QWidget):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
 
     def _inititalize_grid(self):
-        del self.grid
+        if self.grid:
+            while (child := self.grid.takeAt(0)) is not None:
+                if child.widget():
+                    self.grid.removeWidget(child.widget())
+                else:
+                    self.grid.removeItem(child)
+            self.grid.deleteLater()
+        self.current_row = 1
+        self.previous_row = 0
         self.grid = QGridLayout()
         self.grid.setSpacing(0)
         self._initialSpacer = QSpacerItem(0, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -99,7 +107,9 @@ class ShelfWidget(QWidget):
 
     def render_books(self):
         self._inititalize_grid()
-        for book in self.books:
+        books = self.books
+        self.books = []
+        for book in books:
             self.add_book(book)
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
@@ -108,20 +118,25 @@ class ShelfWidget(QWidget):
             event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent) -> None:
-        min_length = float("inf")
-        min_book = self
-        for book in self.books:
-            point = event.pos() - book.geometry().topRight()
-            if (length := point.manhattanLength()) < min_length:
-                min_length = length
-                min_book = book
+        min_book = self._find_book_by_pos(event.pos())
         old_row, old_column = self._get_index_by_mime(event.mimeData())
         self.get_book(old_row, old_column).show()
         self.replace_book(old_row, old_column, *self.find_book(min_book))
         event.acceptProposedAction()
 
+    def _find_book_by_pos(self, pos):
+        min_length = float("inf")
+        min_book = self
+        for book in self.books:
+            if book.geometry().contains(pos):
+                return book
+            point = pos - book.geometry().center()  # TODO: fix
+            if (length := point.manhattanLength()) < min_length:
+                min_length = length
+                min_book = book
+        return min_book
+
     def hide_book(self, book: BookWidget):
-        self.grid.removeWidget(book)
         book.hide()
 
     def replace_book(self, old_row: int, old_column: int, row: int, column: int):
@@ -134,14 +149,12 @@ class ShelfWidget(QWidget):
             self.books.pop(old_index)
         else:
             self.books.pop(old_index + 1)
-        print(self.books)
-
         self.render_books()
 
     def find_book(self, book: BookWidget):
         if book in self.books:
             i = self.books.index(book)
-            return i // self.row_capacity, i % self.row_capacity
+            return (i // self.row_capacity) + 1, i % self.row_capacity
         else:
             return -1, -1
 
@@ -149,11 +162,14 @@ class ShelfWidget(QWidget):
         return self.books[self._book_index(row, column)]
 
     def _book_index(self, row: int, column: int):
+        row -= 1
         return row * self.row_capacity + column
 
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        # TODO: add resize
-        pass
+    def resize(self, width):
+        new_row_capacity = width // 128
+        print(new_row_capacity)
+        self.row_capacity = new_row_capacity
+        self.render_books()
 
     @staticmethod
     def _get_index_by_mime(mime: QMimeData):
@@ -185,8 +201,12 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         palette.setBrush(self.backgroundRole(), ShelfWidget.BACKGROUND)
         self.shelf.setPalette(palette)
 
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        if self.isVisible():
+            self.shelf.resize(event.size().width())
+
     def load_books(self):
-        for i in range(10):
+        for i in range(5):
             self.shelf.add_book(BookWidget(self.shelf))
 
 
