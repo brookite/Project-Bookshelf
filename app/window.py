@@ -26,7 +26,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.shelf.setPalette(palette)
 
     def load_books(self):
-        for i in range(7):
+        for i in range(30):
             book = BookWidget(self.shelf)
             book.setToolTip(str(i))
             self.shelf.add_book(book)
