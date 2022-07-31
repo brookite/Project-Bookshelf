@@ -2,12 +2,12 @@ from PySide6.QtCore import QMimeData
 from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
     QApplication
-from app.utils.path import resolve_path
+from app.utils.path import resolve_path, open_file
 from typing import *
 
 
 class BookWidget(QLabel):
-    booksrc: str
+    metadata: dict
     thumbnail: QPixmap
     owner: "ShelfWidget"
 
@@ -15,7 +15,7 @@ class BookWidget(QLabel):
 
     def __init__(self, owner):
         super().__init__()
-        self._booksrc = None
+        self._metadata = None
         self._owner = owner
         if not BookWidget.PIXMAP:
             BookWidget.PIXMAP = QPixmap(resolve_path("resources", "dummybook.png"))
@@ -39,9 +39,16 @@ class BookWidget(QLabel):
             self.hide()
             drag.exec(Qt.MoveAction)
 
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        open_file(self.metadata["src"])
+
     @property
-    def booksrc(self):
-        return self._booksrc
+    def metadata(self):
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, value: dict):
+        self._metadata = value
 
     @property
     def thumbnail(self):
@@ -54,7 +61,7 @@ class BookWidget(QLabel):
 
 class ShelfWidget(QWidget):
     BACKGROUND = None
-    MAX_BOOKS_COUNT = 2048
+    MAX_BOOKS_COUNT = 256
 
     def __init__(self):
         super().__init__()
