@@ -1,3 +1,5 @@
+import os.path
+
 from PySide6.QtCore import QMimeData
 from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
@@ -53,6 +55,23 @@ class BookWidget(QLabel):
     @property
     def thumbnail(self):
         return self._thumbnail
+
+    def updateThumbnail(self, thumbnailer):
+        if self.metadata["thumbnail"]:
+            if self.metadata["thumbnail"].startswith("$DEFAULT_THUMBNAIL_PATH/"):
+                name = self.metadata["thumbnail"].replace("$DEFAULT_THUMBNAIL_PATH/", "")
+                path = os.path.join(os.path.abspath(thumbnailer.directory), name)
+            else:
+                path = os.path.abspath(self.metadata["thumbnail"])
+            pixmap = QPixmap(path)
+        else:
+            pixmap = BookWidget.PIXMAP
+        self._thumbnail = pixmap
+        self.setPixmap(pixmap)
+
+    def setThumbnail(self, thumbnail):
+        self._thumbnail = thumbnail
+        self.setPixmap(thumbnail)
 
     @property
     def owner(self):

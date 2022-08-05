@@ -91,3 +91,7 @@ class AppStorage:
         if not os.path.exists(path):
             os.mkdir(path)
 
+    @property
+    def thumbnail_dir(self):
+        return os.path.join(self.root, ".thumbnails")
+

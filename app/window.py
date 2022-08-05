@@ -2,6 +2,7 @@ from PySide6.QtGui import QPalette, QPixmap, Qt
 from PySide6.QtWidgets import QMainWindow, QFileDialog
 
 from app.settings import AppStorage
+from app.thumbnailer import Thumbnailer
 from app.ui.main import Ui_Bookshelf
 from app.utils.path import resolve_path, SUPPORTED_FORMATS_NAMES, SUPPORTED_FORMATS
 from app.widgets.books import ShelfWidget, BookWidget
@@ -21,6 +22,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.actionOpen.triggered.connect(self.add_books)
+        self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
 
     def get_current_shelf(self):
@@ -36,6 +38,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def load_books(self):
         for bookdata in self.settings.config.get_books(self.shelf_index):
             self.load_book(bookdata)
+        self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
 
     def load_book(self, bookdata: dict):
         book = BookWidget(self.get_current_shelf())
@@ -56,6 +59,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
                 metadata = self.add_book(file)
                 if metadata:
                     self.load_book(metadata)
+        self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
 
 
 

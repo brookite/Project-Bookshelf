@@ -10,7 +10,7 @@ SUPPORTED_FORMATS = [
     ".zfb2"
 ]
 SUPPORTED_THUMBNAIL_FORMATS = [
-    ".pdf", ".djvu", ".djv"
+    ".pdf", ".djvu", ".djv", ".epub", ".fb2"
 ]
 
 
