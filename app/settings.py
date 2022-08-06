@@ -59,7 +59,7 @@ class BooksConfig(dict):
 
     def save(self):
         with open(self._path, "w", encoding="utf-8") as fobj:
-            json.dump(self, fobj, ensure_ascii=False)
+            json.dump(self, fobj, ensure_ascii=False, indent=4)
 
     def route(self, *args) -> Union[list, dict]:
         obj = self

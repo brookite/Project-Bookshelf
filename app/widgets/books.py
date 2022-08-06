@@ -58,11 +58,7 @@ class BookWidget(QLabel):
 
     def updateThumbnail(self, thumbnailer):
         if self.metadata["thumbnail"]:
-            if self.metadata["thumbnail"].startswith("$DEFAULT_THUMBNAIL_PATH/"):
-                name = self.metadata["thumbnail"].replace("$DEFAULT_THUMBNAIL_PATH/", "")
-                path = os.path.join(os.path.abspath(thumbnailer.directory), name)
-            else:
-                path = os.path.abspath(self.metadata["thumbnail"])
+            path = thumbnailer.resolve_path(self.metadata["thumbnail"])
             pixmap = QPixmap(path)
         else:
             pixmap = BookWidget.PIXMAP

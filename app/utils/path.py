@@ -3,14 +3,14 @@ import subprocess
 import platform
 
 SUPPORTED_FORMATS_NAMES = "All formats (*.*);;PDF (*.pdf);;DJVU (*.djvu *.djv);;EPUB (*.epub);;MOBI (*.mobi *.azw);;FictionBook (*.fb2, " \
-                          "*.fb2z, *.zfb2) "
+                          "*.fb2z, *.zfb2);;CBZ (*.cbz)"
 SUPPORTED_FORMATS = [
     ".pdf", ".djvu", ".djv", ".epub",
     ".mobi", ".azw", ".fb2", ".fb2z",
-    ".zfb2"
+    ".zfb2", ".cbz"
 ]
 SUPPORTED_THUMBNAIL_FORMATS = [
-    ".pdf", ".djvu", ".djv", ".epub", ".fb2"
+    ".pdf", ".djvu", ".djv", ".epub", ".fb2", ".cbz"
 ]
 
 
