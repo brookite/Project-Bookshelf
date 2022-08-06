@@ -8,7 +8,7 @@ if not os.path.exists(DEFAULT_PATH):
 
 
 class BooksConfig(dict):
-    def __init__(self, path):
+    def __init__(self, path: str):
         super().__init__()
         self._path = path
         self.load()
@@ -92,6 +92,5 @@ class AppStorage:
             os.mkdir(path)
 
     @property
-    def thumbnail_dir(self):
+    def thumbnail_dir(self) -> str:
         return os.path.join(self.root, ".thumbnails")
-

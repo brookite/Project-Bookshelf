@@ -7,6 +7,7 @@ import random
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QImage, QPixmap
 
+from app.settings import AppStorage
 from app.utils.path import SUPPORTED_THUMBNAIL_FORMATS
 from app.widgets.books import BookWidget
 
@@ -34,7 +35,7 @@ except ImportError:
 class Thumbnailer:
     DEFAULT_THUMBNAIL_SIZE = (100, 126)
 
-    def __init__(self, settings):
+    def __init__(self, settings: AppStorage):
         self._dir = settings.thumbnail_dir
         self.settings = settings
         self._tmp_ctx = None
@@ -64,7 +65,7 @@ class Thumbnailer:
             100, 126, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
         return img
 
-    def _gen_thumbnail_djvulibre(self, src: str):
+    def _gen_thumbnail_djvulibre(self, src: str) -> QImage:
         if not self._tmp_ctx:
             ctx = djvu.decode.Context()
             self._tmp_ctx = ctx
@@ -84,13 +85,13 @@ class Thumbnailer:
         img.mirror()
         return img
 
-    def _save(self, book: BookWidget, image):
+    def _save(self, book: BookWidget, image: QImage) -> None:
         name = self._random_name() + ".png"
         image.save(os.path.join(self._dir, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_THUMBNAIL_PATH/{name}"
-        book.setThumbnail(QPixmap.fromImage(image))
+        book.set_thumbnail(QPixmap.fromImage(image))
 
-    def resolve_path(self, path):
+    def resolve_path(self, path: str):
         if path.startswith("$DEFAULT_THUMBNAIL_PATH/"):
             name = path.replace("$DEFAULT_THUMBNAIL_PATH/", "")
             return os.path.join(os.path.abspath(self.directory), name)
@@ -101,7 +102,7 @@ class Thumbnailer:
         for book in books:
             if book.metadata["thumbnail"]:
                 if os.path.exists(self.resolve_path(book.metadata["thumbnail"])):
-                    book.updateThumbnail(self)
+                    book.update_thumbnail(self)
                     continue
             ext = os.path.splitext(book.metadata["src"])[-1]
             if ext not in SUPPORTED_THUMBNAIL_FORMATS:
@@ -117,5 +118,5 @@ class Thumbnailer:
         self.settings.config.save()
 
     @property
-    def directory(self):
+    def directory(self) -> str:
         return self._dir

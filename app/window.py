@@ -9,6 +9,7 @@ from app.widgets.books import ShelfWidget, BookWidget
 
 import os
 
+
 class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def __init__(self, app):
         super().__init__()
@@ -60,10 +61,3 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
                 if metadata:
                     self.load_book(metadata)
         self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
-
-
-
-
-
-
-

@@ -1,6 +1,4 @@
-import os.path
-
-from PySide6.QtCore import QMimeData
+from PySide6.QtCore import QMimeData, QTimerEvent
 from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
     QApplication
@@ -56,7 +54,7 @@ class BookWidget(QLabel):
     def thumbnail(self):
         return self._thumbnail
 
-    def updateThumbnail(self, thumbnailer):
+    def update_thumbnail(self, thumbnailer):
         if self.metadata["thumbnail"]:
             path = thumbnailer.resolve_path(self.metadata["thumbnail"])
             pixmap = QPixmap(path)
@@ -65,7 +63,7 @@ class BookWidget(QLabel):
         self._thumbnail = pixmap
         self.setPixmap(pixmap)
 
-    def setThumbnail(self, thumbnail):
+    def set_thumbnail(self, thumbnail):
         self._thumbnail = thumbnail
         self.setPixmap(thumbnail)
 
@@ -76,7 +74,8 @@ class BookWidget(QLabel):
 
 class ShelfWidget(QWidget):
     BACKGROUND = None
-    MAX_BOOKS_COUNT = 256
+    MAX_BOOKS_COUNT = 512
+    RESIZE_LATENCY = 150  # milliseconds
 
     def __init__(self):
         super().__init__()
@@ -86,6 +85,7 @@ class ShelfWidget(QWidget):
         self.books: List[BookWidget] = []
         self.grid = None
         self._initialSpacer = None
+        self.__resize_timerid = 0
         self._initialize_grid()
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
@@ -205,6 +205,14 @@ class ShelfWidget(QWidget):
         return row * self.row_capacity + column
 
     def resizeEvent(self, event: QResizeEvent) -> None:
+        if self.__resize_timerid:
+            self.killTimer(self.__resize_timerid)
+            self.__resize_timerid = 0
+        self.__resize_timerid = self.startTimer(self.RESIZE_LATENCY)
+
+    def timerEvent(self, event: QTimerEvent) -> None:
+        self.killTimer(self.__resize_timerid)
+        self.__resize_timerid = 0
         if self.isVisible():
             self.row_capacity = self.size().width() // 128
             self.render_books()

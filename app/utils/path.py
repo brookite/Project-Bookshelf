@@ -2,7 +2,8 @@ import os
 import subprocess
 import platform
 
-SUPPORTED_FORMATS_NAMES = "All formats (*.*);;PDF (*.pdf);;DJVU (*.djvu *.djv);;EPUB (*.epub);;MOBI (*.mobi *.azw);;FictionBook (*.fb2, " \
+SUPPORTED_FORMATS_NAMES = "All formats (*.*);;PDF (*.pdf);;DJVU (*.djvu *.djv);;EPUB (*.epub)" \
+                          ";;MOBI (*.mobi *.azw);;FictionBook (*.fb2, " \
                           "*.fb2z, *.zfb2);;CBZ (*.cbz)"
 SUPPORTED_FORMATS = [
     ".pdf", ".djvu", ".djv", ".epub",
