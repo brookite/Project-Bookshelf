@@ -76,6 +76,7 @@ class AppStorage:
 
     def create_files(self):
         self.create_file_if_not_exists(self.root, "books.json")
+        self.create_dir_if_not_exists(self.root, ".user_thumbnails")
         self.create_dir_if_not_exists(self.root, ".thumbnails")
         self.create_dir_if_not_exists(self.root, "shelf_view")
 
@@ -94,3 +95,7 @@ class AppStorage:
     @property
     def thumbnail_dir(self) -> str:
         return os.path.join(self.root, ".thumbnails")
+
+    @property
+    def user_thumbnail_dir(self) -> str:
+        return os.path.join(self.root, ".user_thumbnails")

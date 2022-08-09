@@ -31,12 +31,12 @@ except ImportError:
     warnings.warn("pillow library wasn't found. All thumbnailes will be unavailable")
 
 
-
 class Thumbnailer:
     DEFAULT_THUMBNAIL_SIZE = (100, 126)
 
     def __init__(self, settings: AppStorage):
         self._dir = settings.thumbnail_dir
+        self._user_dir = settings.user_thumbnail_dir
         self.settings = settings
         self._tmp_ctx = None
 
@@ -85,6 +85,14 @@ class Thumbnailer:
         img.mirror()
         return img
 
+    def load_external_thumbnail(self, book: BookWidget, image_path: str):
+        image_path = os.path.abspath(image_path)
+        image = QImage(image_path).scaled(100, 126)
+        name = self._random_name() + ".png"
+        image.save(os.path.join(self._dir, name), "PNG")
+        book.metadata["thumbnail"] = f"$DEFAULT_USER_THUMBNAIL_PATH/{name}"
+        book.set_thumbnail(QPixmap.fromImage(image))
+
     def _save(self, book: BookWidget, image: QImage) -> None:
         name = self._random_name() + ".png"
         image.save(os.path.join(self._dir, name), "PNG")
@@ -92,11 +100,11 @@ class Thumbnailer:
         book.set_thumbnail(QPixmap.fromImage(image))
 
     def resolve_path(self, path: str):
-        if path.startswith("$DEFAULT_THUMBNAIL_PATH/"):
-            name = path.replace("$DEFAULT_THUMBNAIL_PATH/", "")
-            return os.path.join(os.path.abspath(self.directory), name)
-        else:
-            return os.path.abspath(path)
+        if path.startswith("$"):
+            # FIXME
+            path = path.replace("$DEFAULT_THUMBNAIL_PATH/", os.path.abspath(self.directory) + "/")
+            path = path.replace("$DEFAULT_USER_THUMBNAIL_PATH/", os.path.abspath(self.user_directory) + "/")
+        return os.path.abspath(path)
 
     def _thread_loader(self, books: List[BookWidget]):
         for book in books:
@@ -119,4 +127,8 @@ class Thumbnailer:
 
     @property
     def directory(self) -> str:
+        return self._dir
+
+    @property
+    def user_directory(self) -> str:
         return self._dir

@@ -15,7 +15,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         super().__init__()
         self._app = app
         self.settings = AppStorage()
-        self.shelfs = [ShelfWidget()]
+        self.shelfs = [ShelfWidget(self)]
         self.shelf_index = 0
         self.setupUi(self)
         self.scrollArea.setWidget(self.get_current_shelf())

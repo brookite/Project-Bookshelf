@@ -1,7 +1,9 @@
 from PySide6.QtCore import QMimeData, QTimerEvent
-from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent
+from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, QCursor
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
-    QApplication
+    QApplication, QMenu
+
+from app.settings import BooksConfig
 from app.utils.path import resolve_path, open_file
 from typing import *
 
@@ -24,6 +26,20 @@ class BookWidget(QLabel):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
         self._drag_start = None
 
+    def _form_menu(self) -> QMenu:
+        menu = QMenu()
+        thumbnailAction = menu.addAction(self.tr("Set thumbnail"))
+        thumbnailAction.triggered.connect(self.set_external_thumbnail)
+        removeAction = menu.addAction(self.tr("Remove book"))
+        removeAction.triggered.connect(self.remove)
+        return menu
+
+    def set_external_thumbnail(self):
+        pass
+
+    def remove(self):
+        pass
+
     def mousePressEvent(self, event: QMouseEvent) -> None:
         self._drag_start = event.pos()
 
@@ -37,10 +53,15 @@ class BookWidget(QLabel):
             drag.setMimeData(mime)
             drag.setPixmap(self.thumbnail)
             self.hide()
-            drag.exec(Qt.MoveAction)
+            action = drag.exec(Qt.MoveAction)
+            if action == Qt.IgnoreAction:
+                self.show()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        open_file(self.metadata["src"])
+        if event.button() == Qt.RightButton:
+            self._form_menu().exec(event.globalPos())
+        else:
+            open_file(self.metadata["src"])
 
     @property
     def metadata(self):
@@ -77,13 +98,15 @@ class ShelfWidget(QWidget):
     MAX_BOOKS_COUNT = 512
     RESIZE_LATENCY = 150  # milliseconds
 
-    def __init__(self):
+    def __init__(self, owner: "BookshelfWindow"):
         super().__init__()
         self.row_capacity = 3
+        self.owner = owner
         self.current_row = 1
         self.previous_row = 0
         self.books: List[BookWidget] = []
         self.grid = None
+        self.settings = owner.settings.config
         self._initialSpacer = None
         self.__resize_timerid = 0
         self._initialize_grid()
