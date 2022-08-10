@@ -1,4 +1,4 @@
-from PySide6.QtGui import QPalette, QPixmap, Qt
+from PySide6.QtGui import QPalette, QPixmap, Qt, QKeyEvent
 from PySide6.QtWidgets import QMainWindow, QFileDialog
 
 from app.settings import AppStorage
@@ -17,6 +17,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.settings = AppStorage()
         self.shelfs = [ShelfWidget(self)]
         self.shelf_index = 0
+        self._ctrl_pressed = False
         self.setupUi(self)
         self.scrollArea.setWidget(self.get_current_shelf())
         self.set_shelf_background()
@@ -26,8 +27,28 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
 
+    @property
+    def ctrl_pressed(self):
+        return self._ctrl_pressed
+
     def get_current_shelf(self):
         return self.shelfs[self.shelf_index]
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Control:
+            self._ctrl_pressed = True
+
+    def keyReleaseEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Control:
+            self._ctrl_pressed = False
+        if not self.shelfs[self.shelf_index].selected_count:
+            self.set_selection_mode(False)
+
+    def is_selection_mode(self):
+        return self.actionSelection_mode.isChecked()
+
+    def set_selection_mode(self, value: bool) -> None:
+        self.actionSelection_mode.setChecked(value)
 
     def set_shelf_background(self):
         palette = QPalette()
@@ -42,7 +63,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
 
     def load_book(self, bookdata: dict):
-        book = BookWidget(self.get_current_shelf())
+        book = BookWidget(self.get_current_shelf(), self.thumbnailer)
         book.metadata = bookdata
         book.setToolTip(bookdata["name"])
         self.get_current_shelf().add_book(book)

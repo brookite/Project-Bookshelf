@@ -1,10 +1,10 @@
 from PySide6.QtCore import QMimeData, QTimerEvent
-from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, QCursor
+from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, QKeyEvent
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
-    QApplication, QMenu
+    QApplication, QMenu, QFileDialog
 
 from app.settings import BooksConfig
-from app.utils.path import resolve_path, open_file
+from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES
 from typing import *
 
 
@@ -15,9 +15,10 @@ class BookWidget(QLabel):
 
     PIXMAP: QPixmap = None
 
-    def __init__(self, owner):
+    def __init__(self, owner, thumbnailer):
         super().__init__()
         self._metadata = None
+        self._thumbnailer: "Thumbnailer" = thumbnailer
         self._owner = owner
         if not BookWidget.PIXMAP:
             BookWidget.PIXMAP = QPixmap(resolve_path("resources", "dummybook.png"))
@@ -26,19 +27,40 @@ class BookWidget(QLabel):
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
         self._drag_start = None
 
-    def _form_menu(self) -> QMenu:
+    def _book_menu(self) -> QMenu:
         menu = QMenu()
         thumbnailAction = menu.addAction(self.tr("Set thumbnail"))
         thumbnailAction.triggered.connect(self.set_external_thumbnail)
+        thumbnailAction = menu.addAction(self.tr("Reset thumbnail"))
+        thumbnailAction.triggered.connect(self.reset_thumbnail)
         removeAction = menu.addAction(self.tr("Remove book"))
         removeAction.triggered.connect(self.remove)
         return menu
 
-    def set_external_thumbnail(self):
-        pass
+    def _selection_menu(self) -> QMenu:
+        menu = QMenu()
+        thumbnailAction = menu.addAction(self.tr("Open selected books"))
+        thumbnailAction.triggered.connect(self.owner.open_selected_books)
+        thumbnailAction = menu.addAction(self.tr("Remove selected books"))
+        thumbnailAction.triggered.connect(self.owner.remove_selected_books)
+        return menu
 
-    def remove(self):
-        pass
+    def reset_thumbnail(self):
+        self._thumbnailer.reload_thumbnail(self)
+
+    def set_external_thumbnail(self):
+        filename = QFileDialog.getOpenFileName(
+            self, self.tr("Set external thumbnails"), "",
+            SUPPORTED_IMAGES
+        )[0]
+        self._thumbnailer.load_external_thumbnail(self, filename)
+
+    def remove(self, update_ui=True):
+        self.owner.owner.settings.config.remove_book(
+            self.metadata, self.owner.owner.shelf_index)
+        self.owner.owner.settings.config.save()
+        if update_ui:
+            self.owner.pop_book(self)
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
         self._drag_start = event.pos()
@@ -59,9 +81,30 @@ class BookWidget(QLabel):
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
         if event.button() == Qt.RightButton:
-            self._form_menu().exec(event.globalPos())
+            if self.owner.owner.is_selection_mode():
+                self._selection_menu().exec(event.globalPos())
+            else:
+                self._book_menu().exec(event.globalPos())
         else:
-            open_file(self.metadata["src"])
+            if self.owner.owner.is_selection_mode():
+                self.select()
+            else:
+                if self.owner.owner.ctrl_pressed:
+                    self.owner.owner.set_selection_mode(True)
+                    self.select()
+                else:
+                    open_file(self.metadata["src"])
+
+    def select(self):
+        if not self.is_selected():
+            self.setStyleSheet("border: 3px solid #677ff4")
+            self.owner.selected_count += 1
+        else:
+            self.setStyleSheet("")
+            self.owner.selected_count -= 1
+
+    def is_selected(self):
+        return self.styleSheet().startswith("border")
 
     @property
     def metadata(self):
@@ -75,9 +118,9 @@ class BookWidget(QLabel):
     def thumbnail(self):
         return self._thumbnail
 
-    def update_thumbnail(self, thumbnailer):
+    def update_thumbnail(self):
         if self.metadata["thumbnail"]:
-            path = thumbnailer.resolve_path(self.metadata["thumbnail"])
+            path = self._thumbnailer.resolve_path(self.metadata["thumbnail"])
             pixmap = QPixmap(path)
         else:
             pixmap = BookWidget.PIXMAP
@@ -96,22 +139,30 @@ class BookWidget(QLabel):
 class ShelfWidget(QWidget):
     BACKGROUND = None
     MAX_BOOKS_COUNT = 512
-    RESIZE_LATENCY = 150  # milliseconds
+    RESIZE_COOLDOWN = 180  # milliseconds
 
     def __init__(self, owner: "BookshelfWindow"):
         super().__init__()
         self.row_capacity = 3
-        self.owner = owner
+        self._owner = owner
         self.current_row = 1
         self.previous_row = 0
+        self.selected_count = 0
         self.books: List[BookWidget] = []
         self.grid = None
-        self.settings = owner.settings.config
         self._initialSpacer = None
         self.__resize_timerid = 0
         self._initialize_grid()
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
+
+    @property
+    def owner(self) -> "BookshelfWindow":
+        return self._owner
+
+    @property
+    def config(self) -> BooksConfig:
+        return self._owner.settings.config
 
     def _initialize_grid(self):
         if self.grid:
@@ -158,6 +209,32 @@ class ShelfWidget(QWidget):
         self.books = []
         for book in books:
             self.add_book(book)
+
+    def open_selected_books(self):
+        for book in self.books:
+            if book.is_selected():
+                open_file(book.metadata["src"])
+        self.clear_selection()
+
+    def clear_selection(self):
+        for book in self.books:
+            if book.is_selected():
+                book.select()
+        self.owner.set_selection_mode(False)
+
+    def remove_selected_books(self):
+        to_deletion = []
+        for book in self.books:
+            if book.is_selected():
+                to_deletion.append(book)
+        for book in to_deletion:
+            book.remove(update_ui=False)
+        # UI Updating
+        for book in to_deletion:
+            self.pop_book(book)
+        self.clear_selection()
+
+
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         formats = event.mimeData().formats()
@@ -210,6 +287,11 @@ class ShelfWidget(QWidget):
             self.books.pop(old_index + 1)
         self.render_books()
 
+    def pop_book(self, book):
+        if book in self.books:
+            self.books.remove(book)
+        self.render_books()
+
     def find_book(self, book: BookWidget):
         if book in self.books:
             i = self.books.index(book)
@@ -231,7 +313,7 @@ class ShelfWidget(QWidget):
         if self.__resize_timerid:
             self.killTimer(self.__resize_timerid)
             self.__resize_timerid = 0
-        self.__resize_timerid = self.startTimer(self.RESIZE_LATENCY)
+        self.__resize_timerid = self.startTimer(self.RESIZE_COOLDOWN)
 
     def timerEvent(self, event: QTimerEvent) -> None:
         self.killTimer(self.__resize_timerid)

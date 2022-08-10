@@ -1,11 +1,14 @@
 import os
 import json
+import re
+import warnings
 from typing import Union, List, Dict, Optional
 
 DEFAULT_PATH = os.path.expanduser("~/.bookshelf")
 if not os.path.exists(DEFAULT_PATH):
     os.mkdir(DEFAULT_PATH)
 
+VARIABLE_PATTERN = r"\$([\w_]+)"
 
 class BooksConfig(dict):
     def __init__(self, path: str):
@@ -35,6 +38,17 @@ class BooksConfig(dict):
 
     def get_books(self, shelf_index: int) -> List[Dict]:
         return self["shelfs"][shelf_index]["books"]
+
+    def remove_book(self, metadata: dict, shelf_index=None):
+        if shelf_index is None:
+            for shelf in self["shelfs"]:
+                if metadata in shelf["books"]:
+                    shelf["books"].remove(metadata)
+        else:
+            if metadata in self["shelfs"][shelf_index]["books"]:
+                self["shelfs"][shelf_index]["books"].remove(metadata)
+            else:
+                warnings.warn("Book wasn't found in specified shelf")
 
     def add_shelf(self, name) -> int:
         shelf = {}
@@ -73,6 +87,22 @@ class AppStorage:
         self.root = DEFAULT_PATH
         self.create_files()
         self.config = BooksConfig(os.path.join(self.root, "books.json"))
+
+    def resolve_env_variable(self, pattern):
+        matches = re.finditer(VARIABLE_PATTERN, pattern)
+        for match in matches:
+            value = self.get_var(match.group(1))
+            if value:
+                pattern = pattern.replace(match.group(), value)
+        return pattern
+
+    def get_var(self, var):
+        if var == "DEFAULT_THUMBNAIL_PATH":
+            return self.thumbnail_dir
+        elif var == "DEFAULT_USER_THUMBNAIL_PATH":
+            return self.user_thumbnail_dir
+        else:
+            return os.getenv(var)
 
     def create_files(self):
         self.create_file_if_not_exists(self.root, "books.json")

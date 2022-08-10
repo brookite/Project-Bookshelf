@@ -89,9 +89,10 @@ class Thumbnailer:
         image_path = os.path.abspath(image_path)
         image = QImage(image_path).scaled(100, 126)
         name = self._random_name() + ".png"
-        image.save(os.path.join(self._dir, name), "PNG")
+        image.save(os.path.join(self.user_directory, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_USER_THUMBNAIL_PATH/{name}"
         book.set_thumbnail(QPixmap.fromImage(image))
+        self.settings.config.save()
 
     def _save(self, book: BookWidget, image: QImage) -> None:
         name = self._random_name() + ".png"
@@ -100,17 +101,22 @@ class Thumbnailer:
         book.set_thumbnail(QPixmap.fromImage(image))
 
     def resolve_path(self, path: str):
-        if path.startswith("$"):
-            # FIXME
-            path = path.replace("$DEFAULT_THUMBNAIL_PATH/", os.path.abspath(self.directory) + "/")
-            path = path.replace("$DEFAULT_USER_THUMBNAIL_PATH/", os.path.abspath(self.user_directory) + "/")
-        return os.path.abspath(path)
+        clearpath = self.settings.resolve_env_variable(path)
+        return os.path.abspath(clearpath)
+
+    def reload_thumbnail(self, book: BookWidget):
+        book.metadata["thumbnail"] = None
+        thread = threading.Thread(
+            target=self._thread_loader,
+            args=[[book]])
+        thread.daemon = True
+        thread.start()
 
     def _thread_loader(self, books: List[BookWidget]):
         for book in books:
             if book.metadata["thumbnail"]:
                 if os.path.exists(self.resolve_path(book.metadata["thumbnail"])):
-                    book.update_thumbnail(self)
+                    book.update_thumbnail()
                     continue
             ext = os.path.splitext(book.metadata["src"])[-1]
             if ext not in SUPPORTED_THUMBNAIL_FORMATS:
@@ -131,4 +137,4 @@ class Thumbnailer:
 
     @property
     def user_directory(self) -> str:
-        return self._dir
+        return self._user_dir
