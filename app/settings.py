@@ -10,6 +10,7 @@ if not os.path.exists(DEFAULT_PATH):
 
 VARIABLE_PATTERN = r"\$([\w_]+)"
 
+
 class BooksConfig(dict):
     def __init__(self, path: str):
         super().__init__()
@@ -20,7 +21,7 @@ class BooksConfig(dict):
     def _create_structure(self):
         self.setdefault("shelfs", [])
         if len(self["shelfs"]) == 0:
-            self.add_shelf("DEFAULT_NAME")
+            self.add_shelf("$DEFAULT_NAME")
         self.save()
 
     def add_file(self, shelf_index: int, file: Union[os.PathLike, str]) -> Optional[dict]:
@@ -57,7 +58,7 @@ class BooksConfig(dict):
         shelf["books"] = []
         self["shelfs"].append(shelf)
         self.save()
-        return len(self["shelfs"]) - 1
+        return len(self["shelfs"]) - 1, shelf
 
     def load(self):
         try:

@@ -1,5 +1,6 @@
 from PySide6.QtCore import QMimeData, QTimerEvent
-from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, QKeyEvent
+from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, QKeyEvent, \
+    QPalette
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
     QApplication, QMenu, QFileDialog
 
@@ -141,11 +142,13 @@ class ShelfWidget(QWidget):
     MAX_BOOKS_COUNT = 512
     RESIZE_COOLDOWN = 180  # milliseconds
 
-    def __init__(self, owner: "BookshelfWindow"):
+    def __init__(self, owner: "BookshelfWindow", metadata: dict):
         super().__init__()
         self.row_capacity = 3
+        self.loaded = False
         self._owner = owner
         self.current_row = 1
+        self.metadata = metadata
         self.previous_row = 0
         self.selected_count = 0
         self.books: List[BookWidget] = []
@@ -155,6 +158,14 @@ class ShelfWidget(QWidget):
         self._initialize_grid()
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
+        self.set_background()
+
+    def set_background(self):
+        palette = QPalette()
+        if not ShelfWidget.BACKGROUND:
+            ShelfWidget.BACKGROUND = QPixmap(resolve_path("resources", "bg.png"))
+        palette.setBrush(self.owner.backgroundRole(), ShelfWidget.BACKGROUND)
+        self.setPalette(palette)
 
     @property
     def owner(self) -> "BookshelfWindow":

@@ -1,5 +1,6 @@
+from PySide6.QtCore import QRect
 from PySide6.QtGui import QPalette, QPixmap, Qt, QKeyEvent
-from PySide6.QtWidgets import QMainWindow, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QDialog, QInputDialog, QWidget, QScrollArea, QVBoxLayout
 
 from app.settings import AppStorage
 from app.thumbnailer import Thumbnailer
@@ -11,21 +12,30 @@ import os
 
 
 class BookshelfWindow(QMainWindow, Ui_Bookshelf):
+    MAX_SHELFS_COUNT = 32
+
     def __init__(self, app):
         super().__init__()
         self._app = app
         self.settings = AppStorage()
-        self.shelfs = [ShelfWidget(self)]
-        self.shelf_index = 0
         self._ctrl_pressed = False
         self.setupUi(self)
+        self.shelfs = []
+        self.load_shelfs()
+        self.shelf_index = 0
         self.scrollArea.setWidget(self.get_current_shelf())
-        self.set_shelf_background()
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.tabWidget.currentChanged.connect(self._tab_changed)
         self.actionOpen.triggered.connect(self.add_books)
+        self.actionAdd_new_shelf.triggered.connect(self.add_shelf)
         self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
+
+    def _tab_changed(self, index):
+        self.shelf_index = index
+        if not self.get_current_shelf().loaded:
+            self.load_books()
 
     @property
     def ctrl_pressed(self):
@@ -50,23 +60,48 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def set_selection_mode(self, value: bool) -> None:
         self.actionSelection_mode.setChecked(value)
 
-    def set_shelf_background(self):
-        palette = QPalette()
-        if not ShelfWidget.BACKGROUND:
-            ShelfWidget.BACKGROUND = QPixmap(resolve_path("resources", "bg.png"))
-        palette.setBrush(self.backgroundRole(), ShelfWidget.BACKGROUND)
-        self.get_current_shelf().setPalette(palette)
-
     def load_books(self):
         for bookdata in self.settings.config.get_books(self.shelf_index):
             self.load_book(bookdata)
-        self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
+        self.get_current_shelf().loaded = True
+        self.thumbnailer.load_thumbnails(self.get_current_shelf().books)
 
     def load_book(self, bookdata: dict):
         book = BookWidget(self.get_current_shelf(), self.thumbnailer)
         book.metadata = bookdata
         book.setToolTip(bookdata["name"])
         self.get_current_shelf().add_book(book)
+
+    def _form_shelf(self, shelf):
+        bookshelf = QWidget()
+        vbox = QVBoxLayout(bookshelf)
+        scrollArea = QScrollArea(bookshelf)
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollArea.setWidgetResizable(True)
+        shelf.setGeometry(QRect(0, 0, 386, 397))
+        scrollArea.setWidget(shelf)
+        vbox.addWidget(scrollArea)
+        return bookshelf
+
+    def load_shelfs(self):
+        for i, data in enumerate(self.settings.config["shelfs"]):
+            shelf = ShelfWidget(self, data)
+            self.shelfs.append(shelf)
+            if i > 0:
+                self.tabWidget.insertTab(i, self._form_shelf(shelf), data["name"])
+
+    def add_shelf(self):
+        name, success = QInputDialog.getText(
+            self,
+            self.tr("Adding new shelf"),
+            self.tr("Input name of your new shelf")
+        )
+        if success:
+            index, metadata = self.settings.config.add_shelf(name)
+            shelf = ShelfWidget(self, metadata)
+            self.shelfs.append(shelf)
+            self.tabWidget.insertTab(index, self._form_shelf(shelf), name)
 
     def add_book(self, path: str):
         return self.settings.config.add_file(self.shelf_index, path)

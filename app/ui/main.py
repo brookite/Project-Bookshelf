@@ -53,11 +53,11 @@ class Ui_Bookshelf(object):
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setMinimumSize(QSize(410, 410))
         self.tabWidget.setTabsClosable(False)
-        self.mainBookhelf = QWidget()
-        self.mainBookhelf.setObjectName(u"mainBookhelf")
-        self.verticalLayout_2 = QVBoxLayout(self.mainBookhelf)
+        self.mainBookshelf = QWidget()
+        self.mainBookshelf.setObjectName(u"mainBookshelf")
+        self.verticalLayout_2 = QVBoxLayout(self.mainBookshelf)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.scrollArea = QScrollArea(self.mainBookhelf)
+        self.scrollArea = QScrollArea(self.mainBookshelf)
         self.scrollArea.setObjectName(u"scrollArea")
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
@@ -67,7 +67,7 @@ class Ui_Bookshelf(object):
 
         self.verticalLayout_2.addWidget(self.scrollArea)
 
-        self.tabWidget.addTab(self.mainBookhelf, "")
+        self.tabWidget.addTab(self.mainBookshelf, "")
 
         self.verticalLayout.addWidget(self.tabWidget)
 
@@ -115,7 +115,7 @@ class Ui_Bookshelf(object):
         self.actionAbout.setText(QCoreApplication.translate("Bookshelf", u"About", None))
         self.actionSettings.setText(QCoreApplication.translate("Bookshelf", u"Settings", None))
         self.actionSelection_mode.setText(QCoreApplication.translate("Bookshelf", u"Selection mode", None))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.mainBookhelf), QCoreApplication.translate("Bookshelf", u"My books", None))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.mainBookshelf), QCoreApplication.translate("Bookshelf", u"My books", None))
         self.menuFile.setTitle(QCoreApplication.translate("Bookshelf", u"File", None))
         self.menuTools.setTitle(QCoreApplication.translate("Bookshelf", u"Tools", None))
         self.menuHelp.setTitle(QCoreApplication.translate("Bookshelf", u"Help", None))

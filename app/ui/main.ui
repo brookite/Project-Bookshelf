@@ -32,7 +32,7 @@
       <property name="tabsClosable">
        <bool>false</bool>
       </property>
-      <widget class="QWidget" name="mainBookhelf">
+      <widget class="QWidget" name="mainBookshelf">
        <attribute name="title">
         <string>My books</string>
        </attribute>
