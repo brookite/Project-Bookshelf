@@ -1,3 +1,4 @@
+import hashlib
 import os.path
 import warnings
 from typing import List
@@ -48,6 +49,11 @@ class Thumbnailer:
             text += random.choice(alpha)
         return text
 
+    @staticmethod
+    def _hashed_name(name):
+        name = name.encode("utf-8")
+        return hashlib.md5(name).hexdigest()
+
     def load_thumbnails(self, books: List[BookWidget]):
         thread = threading.Thread(
             target=self._thread_loader,
@@ -88,14 +94,14 @@ class Thumbnailer:
     def load_external_thumbnail(self, book: BookWidget, image_path: str):
         image_path = os.path.abspath(image_path)
         image = QImage(image_path).scaled(100, 126)
-        name = self._random_name() + ".png"
+        name = self._hashed_name(image_path) + ".png"
         image.save(os.path.join(self.user_directory, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_USER_THUMBNAIL_PATH/{name}"
         book.set_thumbnail(QPixmap.fromImage(image))
         self.settings.config.save()
 
     def _save(self, book: BookWidget, image: QImage) -> None:
-        name = self._random_name() + ".png"
+        name = self._hashed_name(os.path.abspath(book.metadata["src"])) + ".png"
         image.save(os.path.join(self._dir, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_THUMBNAIL_PATH/{name}"
         book.set_thumbnail(QPixmap.fromImage(image))

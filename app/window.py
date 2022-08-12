@@ -1,6 +1,6 @@
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QPalette, QPixmap, Qt, QKeyEvent
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QDialog, QInputDialog, QWidget, QScrollArea, QVBoxLayout
+from PySide6.QtGui import QPalette, QPixmap, Qt, QKeyEvent, QCursor, QMouseEvent
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QDialog, QInputDialog, QWidget, QScrollArea, QVBoxLayout, QMenu
 
 from app.settings import AppStorage
 from app.thumbnailer import Thumbnailer
@@ -23,10 +23,12 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.shelfs = []
         self.load_shelfs()
         self.shelf_index = 0
+        self._selected_shelf_index = -1
         self.scrollArea.setWidget(self.get_current_shelf())
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tabWidget.currentChanged.connect(self._tab_changed)
+        self.tabWidget.tabBar().tabBarDoubleClicked.connect(self._tab_menu)
         self.actionOpen.triggered.connect(self.add_books)
         self.actionAdd_new_shelf.triggered.connect(self.add_shelf)
         self.thumbnailer = Thumbnailer(self.settings)
@@ -36,6 +38,27 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.shelf_index = index
         if not self.get_current_shelf().loaded:
             self.load_books()
+
+    def remove_shelf(self):
+        index = self._selected_shelf_index
+        if index == -1:
+            return
+        elif index == 0:
+            self.shelfs[0].clear_all()
+        else:
+            self.settings.config["shelfs"].pop(index)
+            self.tabWidget.removeTab(index)
+            shelf = self.shelfs.pop(index)
+            del shelf
+        self.settings.config.save()
+        self._selected_shelf_index = -1
+
+    def _tab_menu(self, index):
+        self._selected_shelf_index = index
+        menu = QMenu()
+        removeAction = menu.addAction(self.tr("Remove shelf"))
+        removeAction.triggered.connect(self.remove_shelf)
+        menu.exec(QCursor.pos())
 
     @property
     def ctrl_pressed(self):

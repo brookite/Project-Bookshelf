@@ -233,6 +233,15 @@ class ShelfWidget(QWidget):
                 book.select()
         self.owner.set_selection_mode(False)
 
+    def clear_all(self):
+        to_deletion = self.books.copy()
+        for book in to_deletion:
+            book.remove(update_ui=False)
+        # UI Updating
+        for book in to_deletion:
+            self.pop_book(book, False)
+        self.render_books()
+
     def remove_selected_books(self):
         to_deletion = []
         for book in self.books:
@@ -242,10 +251,9 @@ class ShelfWidget(QWidget):
             book.remove(update_ui=False)
         # UI Updating
         for book in to_deletion:
-            self.pop_book(book)
+            self.pop_book(book, False)
+        self.render_books()
         self.clear_selection()
-
-
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
         formats = event.mimeData().formats()
@@ -298,10 +306,11 @@ class ShelfWidget(QWidget):
             self.books.pop(old_index + 1)
         self.render_books()
 
-    def pop_book(self, book):
+    def pop_book(self, book, update_ui=True):
         if book in self.books:
             self.books.remove(book)
-        self.render_books()
+        if update_ui:
+            self.render_books()
 
     def find_book(self, book: BookWidget):
         if book in self.books:
