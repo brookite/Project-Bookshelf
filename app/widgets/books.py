@@ -85,6 +85,7 @@ class BookWidget(QLabel):
             self.hide()
             action = drag.exec(Qt.MoveAction)
             if action == Qt.IgnoreAction:
+                self._drag_start = None
                 self.show()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
@@ -275,6 +276,11 @@ class ShelfWidget(QWidget):
         event.acceptProposedAction()
 
     def _find_book_by_pos(self, pos):
+        '''
+        Algorithm:
+        1. Found row where will be book
+        2. Found place in row
+        '''
         found_row = False
         row = 1
         for row in range(1, self.current_row + 1):
@@ -284,13 +290,12 @@ class ShelfWidget(QWidget):
                 found_row = True
                 break
         row = row if found_row else 1
-        print("Found row:", row)
         if self.get_book(row, 0).geometry().topLeft().x() >= pos.x():
             return self._book_index(row, 0)
         else:
             min_length = [float("inf"), float("inf")]
             min_index = [-1, -1]
-            for i in range(self.row_capacity):
+            for i in range(len(self.books) % self.row_capacity):
                 bookpos = self.get_book(row, i).geometry().center()
                 length = abs(pos.x() - bookpos.x())
                 if length < min_length[1]:
@@ -305,8 +310,6 @@ class ShelfWidget(QWidget):
                 return self._book_index(row, min_index[1]) + 1
 
     def replace_book(self, old_index, new_index):
-        #FIXME: incorrect replace to end of shelf
-        print(old_index, new_index)
         self.books.insert(new_index, self.books[old_index])
         if old_index <= new_index:
             self.books.pop(old_index)
