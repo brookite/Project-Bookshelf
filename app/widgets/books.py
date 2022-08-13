@@ -1,8 +1,8 @@
 from PySide6.QtCore import QMimeData, QTimerEvent
-from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, QKeyEvent, \
+from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, \
     QPalette
 from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
-    QApplication, QMenu, QFileDialog
+    QApplication, QMenu, QFileDialog, QGraphicsDropShadowEffect
 
 from app.settings import BooksConfig
 from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES
@@ -27,6 +27,13 @@ class BookWidget(QLabel):
         self.setPixmap(BookWidget.PIXMAP)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
         self._drag_start = None
+        self.set_shadow()
+
+    def set_shadow(self):
+        shadow = QGraphicsDropShadowEffect(self)
+        shadow.setOffset(3)
+        shadow.setBlurRadius(10)
+        self.setGraphicsEffect(shadow)
 
     def _book_menu(self) -> QMenu:
         menu = QMenu()
@@ -298,7 +305,8 @@ class ShelfWidget(QWidget):
                 return self._book_index(row, min_index[1]) + 1
 
     def replace_book(self, old_index, new_index):
-        print(old_index, new_index)  # TODO: check whether correct
+        #FIXME: incorrect replace to end of shelf
+        print(old_index, new_index)
         self.books.insert(new_index, self.books[old_index])
         if old_index <= new_index:
             self.books.pop(old_index)

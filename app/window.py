@@ -1,15 +1,16 @@
 from PySide6.QtCore import QRect
-from PySide6.QtGui import QPalette, QPixmap, Qt, QKeyEvent, QCursor, QMouseEvent
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QDialog, QInputDialog, QWidget, QScrollArea, QVBoxLayout, QMenu
+from PySide6.QtGui import Qt, QKeyEvent, QCursor
+from PySide6.QtWidgets import QMainWindow, QFileDialog, QDialog, QInputDialog, \
+    QWidget, QScrollArea, QVBoxLayout, QMenu, QMessageBox, QApplication
 
+from app.appinfo import VERSION_NAME
 from app.settings import AppStorage
 from app.thumbnailer import Thumbnailer
 from app.ui.main import Ui_Bookshelf
-from app.utils.path import resolve_path, SUPPORTED_FORMATS_NAMES, SUPPORTED_FORMATS
+from app.utils.path import SUPPORTED_FORMATS_NAMES, SUPPORTED_FORMATS
 from app.widgets.books import ShelfWidget, BookWidget
 
 import os
-
 
 class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     MAX_SHELFS_COUNT = 32
@@ -29,8 +30,14 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tabWidget.currentChanged.connect(self._tab_changed)
         self.tabWidget.tabBar().tabBarDoubleClicked.connect(self._tab_menu)
+
         self.actionOpen.triggered.connect(self.add_books)
+        self.actionExit.triggered.connect(self.close)
         self.actionAdd_new_shelf.triggered.connect(self.add_shelf)
+        self.actionAbout.triggered.connect(self.about)
+        self.actionAbout_Qt.triggered.connect(QApplication.instance().aboutQt)
+
+
         self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
 
@@ -48,8 +55,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         else:
             self.settings.config["shelfs"].pop(index)
             self.tabWidget.removeTab(index)
-            shelf = self.shelfs.pop(index)
-            del shelf
+            self.shelfs.pop(index)
         self.settings.config.save()
         self._selected_shelf_index = -1
 
@@ -115,6 +121,11 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
                 self.tabWidget.insertTab(i, self._form_shelf(shelf), data["name"])
 
     def add_shelf(self):
+        if len(self.shelfs) >= self.MAX_SHELFS_COUNT:
+            QMessageBox.warning(
+                self, self.tr("Limit has reached"),
+                self.tr(f"You may create only {self.MAX_SHELFS_COUNT} shelfs"))
+            return
         name, success = QInputDialog.getText(
             self,
             self.tr("Adding new shelf"),
@@ -126,7 +137,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             self.shelfs.append(shelf)
             self.tabWidget.insertTab(index, self._form_shelf(shelf), name)
 
-    def add_book(self, path: str):
+    def add_new_book(self, path: str):
         return self.settings.config.add_file(self.shelf_index, path)
 
     def add_books(self):
@@ -136,7 +147,21 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         )
         for file in filenames[0]:
             if os.path.splitext(file)[1] in SUPPORTED_FORMATS:
-                metadata = self.add_book(file)
-                if metadata:
-                    self.load_book(metadata)
+                if (len(self.get_current_shelf().books) + 1) <= ShelfWidget.MAX_BOOKS_COUNT:
+                    metadata = self.add_new_book(file)
+                    if metadata:
+                        self.load_book(metadata)
+                else:
+                    QMessageBox.warning(
+                        self, self.tr("Limit has reached"),
+                        self.tr(f"You may place in one shelf only {ShelfWidget.MAX_BOOKS_COUNT} books"))
+                    break
         self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
+
+    def about(self):
+        QMessageBox.about(self, self.tr("About Project Bookshelf"),
+                                '<p><b>' + f'Project Bookshelf {VERSION_NAME}' + '</b></p>'
+                                 + self.tr('Elegant bookshelf for your documents') + '<br>'
+                                 + self.tr('Author: ') + "Brookit, 2022"
+                                 + '<br><a href="https://github.com/brookite">GitHub</a>')
+
