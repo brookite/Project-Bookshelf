@@ -1,3 +1,5 @@
+import math
+
 from PySide6.QtCore import QMimeData, QTimerEvent
 from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, \
     QPalette
@@ -63,7 +65,8 @@ class BookWidget(QLabel):
         )[0]
         self._thumbnailer.load_external_thumbnail(self, filename)
 
-    def remove(self, update_ui=True):
+    def remove(self, checked=False, update_ui=True):
+        # 'checked' parameter is unused
         self.owner.owner.settings.config.remove_book(
             self.metadata, self.owner.owner.shelf_index)
         self.owner.owner.settings.config.save()
@@ -295,7 +298,11 @@ class ShelfWidget(QWidget):
         else:
             min_length = [float("inf"), float("inf")]
             min_index = [-1, -1]
-            for i in range(len(self.books) % self.row_capacity):
+            if math.ceil(len(self.books) / self.row_capacity) == row and len(self.books) % self.row_capacity != 0:
+                places = len(self.books) % self.row_capacity
+            else:
+                places = self.row_capacity
+            for i in range(places):
                 bookpos = self.get_book(row, i).geometry().center()
                 length = abs(pos.x() - bookpos.x())
                 if length < min_length[1]:
