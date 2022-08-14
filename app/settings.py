@@ -2,6 +2,7 @@ import os
 import json
 import re
 import warnings
+from zipfile import ZipFile
 from typing import Union, List, Dict, Optional
 
 DEFAULT_PATH = os.path.expanduser("~/.bookshelf")
@@ -89,6 +90,21 @@ class AppStorage:
         self.create_files()
         self.config = BooksConfig(os.path.join(self.root, "books.json"))
 
+    def backup(self, output_path):
+        exclude = ["book_paths", ".thumbnails"]
+        with ZipFile(output_path, 'w') as zipobj:
+            for folder, subfolders, filenames in os.walk(self.root):
+                for filename in filenames:
+                    if not (os.path.basename(filename) in exclude
+                            or os.path.basename(folder) in exclude):
+                        filepath = os.path.join(folder, filename)
+                        zippath = filepath.replace(self.root + os.sep, "")
+                        zipobj.write(filepath, zippath)
+
+    def restore(self, backup_path):
+        # check that books.json in archive, clear storage, extract zip
+        pass
+
     def resolve_env_variable(self, pattern):
         matches = re.finditer(VARIABLE_PATTERN, pattern)
         for match in matches:
@@ -107,6 +123,7 @@ class AppStorage:
 
     def create_files(self):
         self.create_file_if_not_exists(self.root, "books.json")
+        self.create_file_if_not_exists(self.root, "book_paths")
         self.create_dir_if_not_exists(self.root, ".user_thumbnails")
         self.create_dir_if_not_exists(self.root, ".thumbnails")
         self.create_dir_if_not_exists(self.root, "shelf_view")
