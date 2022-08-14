@@ -10,7 +10,7 @@ from PySide6.QtGui import QImage, QPixmap
 
 from app.settings import AppStorage
 from app.utils.path import SUPPORTED_THUMBNAIL_FORMATS
-from app.widgets.books import BookWidget
+from app.widgets.book import BookWidget
 
 MUPDF_THUMBNAILES = False
 DJVU_THUMBNAILES = False

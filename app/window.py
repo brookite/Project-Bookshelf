@@ -1,14 +1,15 @@
 from PySide6.QtCore import QRect
-from PySide6.QtGui import Qt, QKeyEvent, QCursor
-from PySide6.QtWidgets import QMainWindow, QFileDialog, QDialog, QInputDialog, \
+from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon
+from PySide6.QtWidgets import QMainWindow, QFileDialog,  QInputDialog, \
     QWidget, QScrollArea, QVBoxLayout, QMenu, QMessageBox, QApplication
 
 from app.appinfo import VERSION_NAME
 from app.settings import AppStorage
 from app.thumbnailer import Thumbnailer
 from app.ui.main import Ui_Bookshelf
-from app.utils.path import SUPPORTED_FORMATS_NAMES, SUPPORTED_FORMATS
-from app.widgets.books import ShelfWidget, BookWidget
+from app.utils.path import SUPPORTED_FORMATS_NAMES, SUPPORTED_FORMATS, resolve_path
+from app.widgets.book import BookWidget
+from app.widgets.shelf import ShelfWidget
 
 import os
 
@@ -26,6 +27,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.shelf_index = 0
         self._selected_shelf_index = -1
         self.scrollArea.setWidget(self.get_current_shelf())
+        self.get_current_shelf().scrollbar = self.scrollArea.verticalScrollBar()
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tabWidget.currentChanged.connect(self._tab_changed)
@@ -37,6 +39,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.actionAbout.triggered.connect(self.about)
         self.actionAbout_Qt.triggered.connect(QApplication.instance().aboutQt)
 
+        self.setWindowIcon(QIcon(resolve_path("resources", "applogo.png")))
 
         self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
@@ -109,6 +112,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scrollArea.setWidgetResizable(True)
         shelf.setGeometry(QRect(0, 0, 386, 397))
+        shelf.scrollbar = scrollArea.verticalScrollBar()
         scrollArea.setWidget(shelf)
         vbox.addWidget(scrollArea)
         return bookshelf

@@ -1,156 +1,17 @@
 import math
+from typing import List
 
 from PySide6.QtCore import QMimeData, QTimerEvent
-from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag, QDragEnterEvent, QDropEvent, QResizeEvent, \
-    QPalette
-from PySide6.QtWidgets import QWidget, QLabel, QGridLayout, QSizePolicy, QSpacerItem, \
-    QApplication, QMenu, QFileDialog, QGraphicsDropShadowEffect
+from PySide6.QtGui import QPixmap, QPalette, QDragEnterEvent, QDropEvent, QResizeEvent
+from PySide6.QtWidgets import QWidget, QSizePolicy, QGridLayout, QSpacerItem
 
 from app.settings import BooksConfig
-from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES
-from typing import *
-
-
-class BookWidget(QLabel):
-    metadata: dict
-    thumbnail: QPixmap
-    owner: "ShelfWidget"
-
-    PIXMAP: QPixmap = None
-
-    def __init__(self, owner, thumbnailer):
-        super().__init__()
-        self._metadata = None
-        self._thumbnailer: "Thumbnailer" = thumbnailer
-        self._owner = owner
-        if not BookWidget.PIXMAP:
-            BookWidget.PIXMAP = QPixmap(resolve_path("resources", "dummybook.png"))
-        self._thumbnail = BookWidget.PIXMAP
-        self.setPixmap(BookWidget.PIXMAP)
-        self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed))
-        self._drag_start = None
-        self.set_shadow()
-
-    def set_shadow(self):
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setOffset(3)
-        shadow.setBlurRadius(10)
-        self.setGraphicsEffect(shadow)
-
-    def _book_menu(self) -> QMenu:
-        menu = QMenu()
-        thumbnailAction = menu.addAction(self.tr("Set thumbnail"))
-        thumbnailAction.triggered.connect(self.set_external_thumbnail)
-        thumbnailAction = menu.addAction(self.tr("Reset thumbnail"))
-        thumbnailAction.triggered.connect(self.reset_thumbnail)
-        removeAction = menu.addAction(self.tr("Remove book"))
-        removeAction.triggered.connect(self.remove)
-        return menu
-
-    def _selection_menu(self) -> QMenu:
-        menu = QMenu()
-        thumbnailAction = menu.addAction(self.tr("Open selected books"))
-        thumbnailAction.triggered.connect(self.owner.open_selected_books)
-        thumbnailAction = menu.addAction(self.tr("Remove selected books"))
-        thumbnailAction.triggered.connect(self.owner.remove_selected_books)
-        return menu
-
-    def reset_thumbnail(self):
-        self._thumbnailer.reload_thumbnail(self)
-
-    def set_external_thumbnail(self):
-        filename = QFileDialog.getOpenFileName(
-            self, self.tr("Set external thumbnails"), "",
-            SUPPORTED_IMAGES
-        )[0]
-        self._thumbnailer.load_external_thumbnail(self, filename)
-
-    def remove(self, checked=False, update_ui=True):
-        # 'checked' parameter is unused
-        self.owner.owner.settings.config.remove_book(
-            self.metadata, self.owner.owner.shelf_index)
-        self.owner.owner.settings.config.save()
-        if update_ui:
-            self.owner.pop_book(self)
-
-    def mousePressEvent(self, event: QMouseEvent) -> None:
-        self._drag_start = event.pos()
-
-    def mouseMoveEvent(self, event: QMouseEvent) -> None:
-        if (event.buttons() == Qt.LeftButton) and \
-                (QApplication.startDragDistance() <= (event.pos() - self._drag_start).manhattanLength()):
-            drag = QDrag(self)
-            mime = QMimeData()
-            row, column = self.owner.find_book(self)
-            mime.setData("application/x-bookshelf-book", f"{row},{column}".encode("utf-8"))
-            drag.setMimeData(mime)
-            drag.setPixmap(self.thumbnail)
-            self.hide()
-            action = drag.exec(Qt.MoveAction)
-            if action == Qt.IgnoreAction:
-                self._drag_start = None
-                self.show()
-
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.RightButton:
-            if self.owner.owner.is_selection_mode():
-                self._selection_menu().exec(event.globalPos())
-            else:
-                self._book_menu().exec(event.globalPos())
-        else:
-            if self.owner.owner.is_selection_mode():
-                self.select()
-            else:
-                if self.owner.owner.ctrl_pressed:
-                    self.owner.owner.set_selection_mode(True)
-                    self.select()
-                else:
-                    open_file(self.metadata["src"])
-
-    def select(self):
-        if not self.is_selected():
-            self.setStyleSheet("border: 3px solid #677ff4")
-            self.owner.selected_count += 1
-        else:
-            self.setStyleSheet("")
-            self.owner.selected_count -= 1
-
-    def is_selected(self):
-        return self.styleSheet().startswith("border")
-
-    @property
-    def metadata(self):
-        return self._metadata
-
-    @metadata.setter
-    def metadata(self, value: dict):
-        self._metadata = value
-
-    @property
-    def thumbnail(self):
-        return self._thumbnail
-
-    def update_thumbnail(self):
-        if self.metadata["thumbnail"]:
-            path = self._thumbnailer.resolve_path(self.metadata["thumbnail"])
-            pixmap = QPixmap(path)
-        else:
-            pixmap = BookWidget.PIXMAP
-        self._thumbnail = pixmap
-        self.setPixmap(pixmap)
-
-    def set_thumbnail(self, thumbnail):
-        self._thumbnail = thumbnail
-        self.setPixmap(thumbnail)
-
-    @property
-    def owner(self):
-        return self._owner
+from app.utils.path import resolve_path, open_file
 
 
 class ShelfWidget(QWidget):
     BACKGROUND = None
-    MAX_BOOKS_COUNT = 512
+    MAX_BOOKS_COUNT = 512  # it may cause lags on big values
     RESIZE_COOLDOWN = 180  # milliseconds
 
     def __init__(self, owner: "BookshelfWindow", metadata: dict):
@@ -162,7 +23,7 @@ class ShelfWidget(QWidget):
         self.metadata = metadata
         self.previous_row = 0
         self.selected_count = 0
-        self.books: List[BookWidget] = []
+        self.books: List["BookWidget"] = []
         self.grid = None
         self._initialSpacer = None
         self.__resize_timerid = 0
@@ -205,7 +66,7 @@ class ShelfWidget(QWidget):
                           ShelfWidget.MAX_BOOKS_COUNT, 0)
         self.setLayout(self.grid)
 
-    def add_book(self, book: BookWidget) -> None:
+    def add_book(self, book: "BookWidget") -> None:
         if len(self.books) >= ShelfWidget.MAX_BOOKS_COUNT:
             return
         row = len(self.books) // self.row_capacity
@@ -226,6 +87,7 @@ class ShelfWidget(QWidget):
             self._initialSpacer.changeSize(0, 0, QSizePolicy.Fixed, QSizePolicy.Fixed)
 
     def render_books(self):
+        # TODO: optimizations are possible
         self._initialize_grid()
         books = self.books
         self.books = []
@@ -245,6 +107,7 @@ class ShelfWidget(QWidget):
         self.owner.set_selection_mode(False)
 
     def clear_all(self):
+        # removes books on UI side and in config
         to_deletion = self.books.copy()
         for book in to_deletion:
             book.remove(update_ui=False)
@@ -254,6 +117,7 @@ class ShelfWidget(QWidget):
         self.render_books()
 
     def remove_selected_books(self):
+        # removes books on UI side and in config
         to_deletion = []
         for book in self.books:
             if book.is_selected():
@@ -280,9 +144,8 @@ class ShelfWidget(QWidget):
 
     def _find_book_by_pos(self, pos):
         '''
-        Algorithm:
-        1. Found row where will be book
-        2. Found place in row
+        Finds book internal index by position. Initially, method will find destination row number,
+        and then will find column for book placement
         '''
         found_row = False
         row = 1
@@ -325,12 +188,18 @@ class ShelfWidget(QWidget):
         self.render_books()
 
     def pop_book(self, book, update_ui=True):
+        '''
+        Removes book only on shelf (not in config)
+        '''
         if book in self.books:
             self.books.remove(book)
         if update_ui:
             self.render_books()
 
-    def find_book(self, book: BookWidget):
+    def find_book(self, book: "BookWidget"):
+        '''
+        Finds book row, column by book widget
+        '''
         if book in self.books:
             i = self.books.index(book)
             return self._find_by_index(i)
@@ -338,16 +207,23 @@ class ShelfWidget(QWidget):
             return -1, -1
 
     def _find_by_index(self, i):
+        '''
+        Returns row, column by internal index (in 'self.books' list)
+        '''
         return (i // self.row_capacity) + 1, i % self.row_capacity
 
     def get_book(self, row: int, column: int):
         return self.books[self._book_index(row, column)]
 
     def _book_index(self, row: int, column: int):
+        '''
+        Returns book internal index by row and column
+        '''
         row -= 1
         return row * self.row_capacity + column
 
     def resizeEvent(self, event: QResizeEvent) -> None:
+        # This cooldown required for smooth rendering
         if self.__resize_timerid:
             self.killTimer(self.__resize_timerid)
             self.__resize_timerid = 0
