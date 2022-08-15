@@ -3,7 +3,7 @@ from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag
 from PySide6.QtWidgets import QLabel, QSizePolicy, QApplication, \
     QMenu, QFileDialog, QGraphicsDropShadowEffect
 
-from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES
+from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES_NAMES
 
 
 class BookWidget(QLabel):
@@ -17,6 +17,7 @@ class BookWidget(QLabel):
         super().__init__()
         self._metadata = None
         self._thumbnailer: "Thumbnailer" = thumbnailer
+        self._settings = thumbnailer.settings
         self._owner = owner
         if not BookWidget.PIXMAP:
             BookWidget.PIXMAP = QPixmap(resolve_path("resources", "dummybook.png"))
@@ -27,10 +28,11 @@ class BookWidget(QLabel):
         self.set_shadow()
 
     def set_shadow(self):
-        shadow = QGraphicsDropShadowEffect(self)
-        shadow.setOffset(3)
-        shadow.setBlurRadius(10)
-        self.setGraphicsEffect(shadow)
+        if self._settings.config["bookShadows"]:
+            shadow = QGraphicsDropShadowEffect(self)
+            shadow.setOffset(3)
+            shadow.setBlurRadius(10)
+            self.setGraphicsEffect(shadow)
 
     def _book_menu(self) -> QMenu:
         menu = QMenu()
@@ -56,7 +58,7 @@ class BookWidget(QLabel):
     def set_external_thumbnail(self):
         filename = QFileDialog.getOpenFileName(
             self, self.tr("Set external thumbnails"), "",
-            SUPPORTED_IMAGES
+            SUPPORTED_IMAGES_NAMES
         )[0]
         self._thumbnailer.load_external_thumbnail(self, filename)
 
@@ -101,7 +103,10 @@ class BookWidget(QLabel):
                     self.owner.owner.set_selection_mode(True)
                     self.select()
                 else:
-                    open_file(self.metadata["src"])
+                    self.open()
+
+    def open(self):
+        open_file(self._settings.config.booksrc(self.metadata))
 
     def select(self):
         if not self.is_selected():

@@ -5,7 +5,7 @@ import platform
 SUPPORTED_FORMATS_NAMES = "All formats (*.*);;PDF (*.pdf);;DJVU (*.djvu *.djv);;EPUB (*.epub)" \
                           ";;MOBI (*.mobi *.azw);;FictionBook (*.fb2, " \
                           "*.fb2z, *.zfb2);;CBZ (*.cbz)"
-SUPPORTED_IMAGES = "Images (*.jpg *.jpeg *.png)"
+SUPPORTED_IMAGES_NAMES = "Images (*.jpg *.jpeg *.png)"
 
 SUPPORTED_FORMATS = [
     ".pdf", ".djvu", ".djv", ".epub",
@@ -15,6 +15,8 @@ SUPPORTED_FORMATS = [
 SUPPORTED_THUMBNAIL_FORMATS = [
     ".pdf", ".djvu", ".djv", ".epub", ".fb2", ".cbz"
 ]
+BACKUP_FORMAT = ".bsfbackup"
+BACKUP_FORMAT_NAME = "Bookshelf backup (*.bsfbackup)"
 
 
 def resolve_path(*args):

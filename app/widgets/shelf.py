@@ -5,7 +5,7 @@ from PySide6.QtCore import QMimeData, QTimerEvent
 from PySide6.QtGui import QPixmap, QPalette, QDragEnterEvent, QDropEvent, QResizeEvent
 from PySide6.QtWidgets import QWidget, QSizePolicy, QGridLayout, QSpacerItem
 
-from app.settings import BooksConfig
+from app.storage import BooksConfig
 from app.utils.path import resolve_path, open_file
 
 
@@ -36,7 +36,13 @@ class ShelfWidget(QWidget):
         palette = QPalette()
         if not ShelfWidget.BACKGROUND:
             ShelfWidget.BACKGROUND = QPixmap(resolve_path("resources", "bg.png"))
-        palette.setBrush(self.owner.backgroundRole(), ShelfWidget.BACKGROUND)
+        pixmap = ShelfWidget.BACKGROUND
+        if self in self.owner.shelfs:
+            i = self.owner.shelfs.index(self)
+            path = self.owner.settings.shelf_view_path(i)
+            if path:
+                pixmap = QPixmap(path)
+        palette.setBrush(self.owner.backgroundRole(), pixmap)
         self.setPalette(palette)
 
     @property
@@ -97,7 +103,7 @@ class ShelfWidget(QWidget):
     def open_selected_books(self):
         for book in self.books:
             if book.is_selected():
-                open_file(book.metadata["src"])
+                book.open()
         self.clear_selection()
 
     def clear_selection(self):

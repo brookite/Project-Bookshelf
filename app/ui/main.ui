@@ -83,6 +83,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionAdd_new_shelf"/>
+    <addaction name="actionRemoveShelf"/>
     <addaction name="actionSelection_mode"/>
     <addaction name="actionSettings"/>
    </widget>
@@ -143,6 +144,11 @@
    </property>
    <property name="text">
     <string>Selection mode</string>
+   </property>
+  </action>
+  <action name="actionRemoveShelf">
+   <property name="text">
+    <string>Remove selected shelf</string>
    </property>
   </action>
  </widget>

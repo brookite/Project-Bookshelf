@@ -8,7 +8,7 @@ import random
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QImage, QPixmap
 
-from app.settings import AppStorage
+from app.storage import AppStorage
 from app.utils.path import SUPPORTED_THUMBNAIL_FORMATS
 from app.widgets.book import BookWidget
 
@@ -101,7 +101,7 @@ class Thumbnailer:
         self.settings.config.save()
 
     def _save(self, book: BookWidget, image: QImage) -> None:
-        name = self._hashed_name(os.path.abspath(book.metadata["src"])) + ".png"
+        name = self._hashed_name(self.settings.config.booksrc(book.metadata)) + ".png"
         image.save(os.path.join(self._dir, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_THUMBNAIL_PATH/{name}"
         book.set_thumbnail(QPixmap.fromImage(image))
@@ -124,16 +124,16 @@ class Thumbnailer:
                 if os.path.exists(self.resolve_path(book.metadata["thumbnail"])):
                     book.update_thumbnail()
                     continue
-            ext = os.path.splitext(book.metadata["src"])[-1]
+            ext = os.path.splitext(self.settings.config.booksrc(book.metadata))[-1]
             if ext not in SUPPORTED_THUMBNAIL_FORMATS:
                 continue
             if ext in [".djv", ".djvu"]:
                 if DJVU_THUMBNAILES:
-                    image = self._gen_thumbnail_djvulibre(book.metadata["src"])
+                    image = self._gen_thumbnail_djvulibre(self.settings.config.booksrc(book.metadata))
                     self._save(book, image)
             else:
                 if MUPDF_THUMBNAILES:
-                    image = self._gen_thumbnail_mupdf(book.metadata["src"])
+                    image = self._gen_thumbnail_mupdf(self.settings.config.booksrc(book.metadata))
                     self._save(book, image)
         self.settings.config.save()
 
