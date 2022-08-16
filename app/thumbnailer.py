@@ -1,7 +1,7 @@
 import hashlib
 import os.path
 import warnings
-from typing import List
+from typing import List, Optional
 import threading
 import random
 
@@ -61,7 +61,14 @@ class Thumbnailer:
         thread.daemon = True
         thread.start()
 
-    def _gen_thumbnail_mupdf(self, src: str) -> QImage:
+    def _pregen_checks(self, src):
+        if "${{...}}" in src:
+            return False
+        return True
+
+    def _gen_thumbnail_mupdf(self, src: str) -> Optional[QImage]:
+        if not self._pregen_checks(src):
+            return None
         doc = fitz.open(src)
         pix = doc.load_page(0).get_pixmap()
         stream = pix.pil_tobytes(format="PNG", optimize=True)
@@ -71,7 +78,9 @@ class Thumbnailer:
             100, 126, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
         return img
 
-    def _gen_thumbnail_djvulibre(self, src: str) -> QImage:
+    def _gen_thumbnail_djvulibre(self, src: str) -> Optional[QImage]:
+        if not self._pregen_checks(src):
+            return None
         if not self._tmp_ctx:
             ctx = djvu.decode.Context()
             self._tmp_ctx = ctx
@@ -130,11 +139,13 @@ class Thumbnailer:
             if ext in [".djv", ".djvu"]:
                 if DJVU_THUMBNAILES:
                     image = self._gen_thumbnail_djvulibre(self.settings.config.booksrc(book.metadata))
-                    self._save(book, image)
+                    if image:
+                        self._save(book, image)
             else:
                 if MUPDF_THUMBNAILES:
                     image = self._gen_thumbnail_mupdf(self.settings.config.booksrc(book.metadata))
-                    self._save(book, image)
+                    if image:
+                        self._save(book, image)
         self.settings.config.save()
 
     @property

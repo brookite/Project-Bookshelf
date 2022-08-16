@@ -14,7 +14,7 @@ class BookWidget(QLabel):
     PIXMAP: QPixmap = None
 
     def __init__(self, owner, thumbnailer):
-        super().__init__()
+        super().__init__(owner)
         self._metadata = None
         self._thumbnailer: "Thumbnailer" = thumbnailer
         self._settings = thumbnailer.settings
@@ -35,20 +35,20 @@ class BookWidget(QLabel):
             self.setGraphicsEffect(shadow)
 
     def _book_menu(self) -> QMenu:
-        menu = QMenu()
-        thumbnailAction = menu.addAction(self.tr("Set thumbnail"))
+        menu = QMenu(self)
+        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Set thumbnail"))
         thumbnailAction.triggered.connect(self.set_external_thumbnail)
-        thumbnailAction = menu.addAction(self.tr("Reset thumbnail"))
+        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Reset thumbnail"))
         thumbnailAction.triggered.connect(self.reset_thumbnail)
-        removeAction = menu.addAction(self.tr("Remove book"))
+        removeAction = menu.addAction(QApplication.instance().translate("", "Remove book"))
         removeAction.triggered.connect(self.remove)
         return menu
 
     def _selection_menu(self) -> QMenu:
-        menu = QMenu()
-        thumbnailAction = menu.addAction(self.tr("Open selected books"))
+        menu = QMenu(self)
+        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Open selected books"))
         thumbnailAction.triggered.connect(self.owner.open_selected_books)
-        thumbnailAction = menu.addAction(self.tr("Remove selected books"))
+        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Remove selected books"))
         thumbnailAction.triggered.connect(self.owner.remove_selected_books)
         return menu
 
@@ -57,7 +57,7 @@ class BookWidget(QLabel):
 
     def set_external_thumbnail(self):
         filename = QFileDialog.getOpenFileName(
-            self, self.tr("Set external thumbnails"), "",
+            self, QApplication.instance().translate("", "Set external thumbnails"), "",
             SUPPORTED_IMAGES_NAMES
         )[0]
         self._thumbnailer.load_external_thumbnail(self, filename)
@@ -106,8 +106,12 @@ class BookWidget(QLabel):
                     self.open()
 
     def open(self):
-        open_file(self._settings.config.booksrc(self.metadata))
-        self.metadata["openCount"] += 1
+        src = self._settings.config.booksrc(self.metadata)
+        if "${{...}}" in src:
+            self.owner.owner.check_book_paths()
+        else:
+            open_file(src)
+            self.metadata["openCount"] += 1
 
     def select(self):
         if not self.is_selected():

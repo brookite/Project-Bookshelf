@@ -37,7 +37,7 @@ class BookPathsSetupWindow(QDialog, Ui_BooksPath):
 
     def add_path(self):
         filename = QFileDialog.getExistingDirectory(
-            self, self.tr("Select directory"), "")
+            self, QApplication.instance().translate("", "Select directory"), "")
         filename = os.path.abspath(filename)
         for bookpath in self.storage.book_paths:
             if os.path.samefile(bookpath, filename):
@@ -116,7 +116,7 @@ class SettingsWindow(QDialog, Ui_Settings):
 
     def select_backuppath(self):
         filename = QFileDialog.getSaveFileName(
-            self, self.tr("Select path for autobackup"), "",
+            self, QApplication.instance().translate("", "Select path for autobackup"), "",
             BACKUP_FORMAT_NAME
         )[0]
         if not filename.endswith(BACKUP_FORMAT):

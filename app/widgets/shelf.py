@@ -16,7 +16,7 @@ class ShelfWidget(QWidget):
     RESIZE_COOLDOWN = 120  # milliseconds
 
     def __init__(self, owner: "BookshelfWindow", metadata: dict):
-        super().__init__()
+        super().__init__(owner)
         self.row_capacity = 3
         self.loaded = False
         self._owner = owner
@@ -27,7 +27,6 @@ class ShelfWidget(QWidget):
         self.books: List["BookWidget"] = []
         self.grid = None
         self._initialSpacer = None
-        self.__resize_timerid = 0
         self._initialize_grid()
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
@@ -56,6 +55,7 @@ class ShelfWidget(QWidget):
         return self._owner.settings.config
 
     def _initialize_grid(self):
+        print("Grid updated")
         if self.grid:
             while (child := self.grid.takeAt(0)) is not None:
                 if child.widget():
@@ -94,13 +94,49 @@ class ShelfWidget(QWidget):
         if len(self.books) % self.row_capacity == 1:
             self._initialSpacer.changeSize(0, 0, QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-    def render_books(self):
-        # TODO: optimizations are possible
+    def render_books(self, row_constraints=None):
         self._initialize_grid()
         books = self.books
         self.books = []
         for book in books:
             self.add_book(book)
+        #TODO: failed optimization attempts. It is needed more investigation
+        '''
+        if not row_constraints:
+            self._initialize_grid()
+            books = self.books
+            self.books = []
+            for book in books:
+                self.add_book(book)
+        else:
+            row_constraints = list(sorted(row_constraints))
+            row_constraints[1] += 1
+            begin = self._book_index(row_constraints[0], 0)
+            end = self._book_index(row_constraints[1] - 1, self.row_capacity - 1)
+            index = self._book_index(row_constraints[0], 0) + 2 * row_constraints[0]
+            # index+4 because first and second item at all layout is spacers
+            row_count = row_constraints[1] - row_constraints[0]
+            skip_spacers = 2 * (row_count - 1)
+            # first and second item in each row is spacer
+            for i in range(row_count * self.row_capacity + skip_spacers):
+                item = self.grid.takeAt(index)
+                if item.widget():
+                    self.grid.removeWidget(item.widget())
+                    item.widget().setParent(None)
+                else:
+                    self.grid.removeItem(item)
+            print(row_constraints)
+            prev_row = self._find_by_index(begin)[0]
+            for i in range(begin, end + 1):
+                row, column = self._find_by_index(i)
+                if row != prev_row:
+                    self.grid.addItem(QSpacerItem(0, 167, QSizePolicy.Fixed, QSizePolicy.Fixed), row, 0)
+                    self.grid.addItem(QSpacerItem(0, 167, QSizePolicy.Fixed, QSizePolicy.Fixed), row, 0)
+                    prev_row = row
+                self.grid.addWidget(self.books[i], row, column)
+            for i in range(20):
+                print(self.grid.itemAt(i))
+        '''
 
     def open_selected_books(self):
         for book in self.books:
@@ -188,12 +224,17 @@ class ShelfWidget(QWidget):
                 return self._book_index(row, min_index[1]) + 1
 
     def replace_book(self, old_index, new_index):
+        old_row = self._find_by_index(old_index)[0]
+        new_row = self._find_by_index(new_index)[0]
+        print("index check", old_index, new_index)
+
         self.books.insert(new_index, self.books[old_index])
         if old_index <= new_index:
             self.books.pop(old_index)
         else:
             self.books.pop(old_index + 1)
-        self.render_books()
+        self.render_books((old_row, new_row))
+        self.owner.rebuild_book_order()
 
     def pop_book(self, book, update_ui=True):
         '''
@@ -229,20 +270,6 @@ class ShelfWidget(QWidget):
         '''
         row -= 1
         return row * self.row_capacity + column
-
-    def resizeEvent(self, event: QResizeEvent) -> None:
-        # This cooldown required for smooth rendering
-        if self.__resize_timerid:
-            self.killTimer(self.__resize_timerid)
-            self.__resize_timerid = 0
-        self.__resize_timerid = self.startTimer(self.RESIZE_COOLDOWN)
-
-    def timerEvent(self, event: QTimerEvent) -> None:
-        self.killTimer(self.__resize_timerid)
-        self.__resize_timerid = 0
-        if self.isVisible():
-            self.row_capacity = self.size().width() // 128
-            self.render_books()
 
     @staticmethod
     def _get_index_by_mime(mime: QMimeData):
