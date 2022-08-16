@@ -1,7 +1,5 @@
-import sys
-
 from PySide6.QtCore import QRect
-from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon
+from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon, QCloseEvent
 from PySide6.QtWidgets import QMainWindow, QFileDialog,  QInputDialog, \
     QWidget, QScrollArea, QVBoxLayout, QMenu, QMessageBox, QApplication
 
@@ -24,6 +22,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         super().__init__()
         self._app = app
         self.settings = AppStorage()
+        self.check_autorecover()
+        self.check_book_paths()
         self._ctrl_pressed = False
         self.setupUi(self)
         self.shelfs = []
@@ -53,15 +53,45 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
 
         self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
+        self.get_current_shelf().set_background()
+
+    def closeEvent(self, event: QCloseEvent) -> None:
+        self.settings.save()
+        filename = self.settings.config["autobackupPath"]
+        if os.path.exists(os.path.dirname(filename)) and filename.strip():
+            if not filename.endswith(BACKUP_FORMAT):
+                filename = filename + BACKUP_FORMAT
+            self.settings.backup(filename)
+
+    def check_autorecover(self):
+        if self.settings.config["recoverAutobackup"]:
+            path = self.settings.config["autobackupPath"]
+            if os.path.exists(path) and path.strip():
+                result = self.settings.restore(path, True)
+                if not result:
+                    QMessageBox.critical(
+                        self,
+                        self.tr("Restore failed"),
+                        self.tr("Backup wasn't restored. Check if your backup is valid"))
+
+    def check_book_paths(self):
+        if self.settings.config.uses_book_paths():
+            is_any_unexists = len(self.settings.book_paths) == 0
+            for path in self.settings.book_paths:
+                is_any_unexists |= not os.path.exists(path)
+            if is_any_unexists:
+                self._tmp_bookpathdialog = BookPathsSetupWindow(self, self.settings)
+                self._tmp_bookpathdialog.exec()
 
     def _tab_changed(self, index):
         self.shelf_index = index
         if not self.get_current_shelf().loaded:
             self.load_books()
+            self.get_current_shelf().set_background()
 
     def open_settings(self):
         if not self.settings_window:
-            self.settings_window = SettingsWindow(self, self.settings)
+            self.settings_window = SettingsWindow(self, self.shelf_index, self.settings)
         self.settings_window.show()
 
     def remove_shelf(self):
@@ -164,9 +194,10 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             self, self.tr("Export backup"), "",
             BACKUP_FORMAT_NAME
         )[0]
-        if not filename.endswith(BACKUP_FORMAT):
-            filename = filename + BACKUP_FORMAT
-        self.settings.backup(filename)
+        if filename:
+            if not filename.endswith(BACKUP_FORMAT):
+                filename = filename + BACKUP_FORMAT
+            self.settings.backup(filename)
 
     def import_backup(self):
         filename = QFileDialog.getOpenFileName(
@@ -180,13 +211,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if confirm != QMessageBox.StandardButton.Yes:
             return
         result = self.settings.restore(filename)
-        if self.settings.config.uses_book_paths():
-            is_any_unexists = len(self.settings.book_paths) == 0
-            for path in self.settings.book_paths:
-                is_any_unexists |= not os.path.exists(path)
-            if is_any_unexists:
-                self._tmp_bookpathdialog = BookPathsSetupWindow(self, self.settings)
-                self._tmp_bookpathdialog.show()
+        self.check_book_paths()
         if not result:
             QMessageBox.critical(self,
                                  self.tr("Restore failed"),

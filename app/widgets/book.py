@@ -107,6 +107,7 @@ class BookWidget(QLabel):
 
     def open(self):
         open_file(self._settings.config.booksrc(self.metadata))
+        self.metadata["openCount"] += 1
 
     def select(self):
         if not self.is_selected():

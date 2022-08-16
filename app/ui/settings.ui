@@ -53,13 +53,13 @@
                <property name="widgetResizable">
                 <bool>true</bool>
                </property>
-               <widget class="QWidget" name="scrollAreaWidgetContents_3">
+               <widget class="QWidget" name="shelfViews">
                 <property name="geometry">
                  <rect>
                   <x>0</x>
                   <y>0</y>
                   <width>347</width>
-                  <height>92</height>
+                  <height>193</height>
                  </rect>
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7"/>
@@ -67,19 +67,6 @@
               </widget>
              </item>
             </layout>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </widget>
@@ -102,8 +89,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>478</width>
-            <height>215</height>
+            <width>353</width>
+            <height>161</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -141,6 +128,34 @@
               </widget>
              </item>
             </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLabel" name="label_3">
+               <property name="text">
+                <string>Path for autobackup on exit</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="pathBackup"/>
+             </item>
+             <item>
+              <widget class="QPushButton" name="selectPath">
+               <property name="text">
+                <string>Select</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="recoverBookshelf">
+             <property name="text">
+              <string>Automatically recover bookshelf by autobackup path</string>
+             </property>
+            </widget>
            </item>
            <item>
             <spacer name="verticalSpacer">

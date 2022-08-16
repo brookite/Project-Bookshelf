@@ -1,4 +1,5 @@
 import math
+import os
 from typing import List
 
 from PySide6.QtCore import QMimeData, QTimerEvent
@@ -6,13 +7,13 @@ from PySide6.QtGui import QPixmap, QPalette, QDragEnterEvent, QDropEvent, QResiz
 from PySide6.QtWidgets import QWidget, QSizePolicy, QGridLayout, QSpacerItem
 
 from app.storage import BooksConfig
-from app.utils.path import resolve_path, open_file
+from app.utils.path import resolve_path
 
 
 class ShelfWidget(QWidget):
     BACKGROUND = None
     MAX_BOOKS_COUNT = 512  # it may cause lags on big values
-    RESIZE_COOLDOWN = 180  # milliseconds
+    RESIZE_COOLDOWN = 120  # milliseconds
 
     def __init__(self, owner: "BookshelfWindow", metadata: dict):
         super().__init__()
@@ -30,7 +31,6 @@ class ShelfWidget(QWidget):
         self._initialize_grid()
         self.setAcceptDrops(True)
         self.setSizePolicy(QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred))
-        self.set_background()
 
     def set_background(self):
         palette = QPalette()
@@ -40,8 +40,10 @@ class ShelfWidget(QWidget):
         if self in self.owner.shelfs:
             i = self.owner.shelfs.index(self)
             path = self.owner.settings.shelf_view_path(i)
-            if path:
+            if path and os.path.exists(path):
                 pixmap = QPixmap(path)
+                if pixmap.width() != 512 or pixmap.height() != 167:
+                    pixmap = pixmap.scaled((512, 167))
         palette.setBrush(self.owner.backgroundRole(), pixmap)
         self.setPalette(palette)
 

@@ -8,6 +8,9 @@ import warnings
 from zipfile import ZipFile
 from typing import Union, List, Dict, Optional, Tuple
 
+from app.appinfo import BUILD_NUMBER
+from app.utils.path import SUPPORTED_IMAGES
+
 DEFAULT_PATH = os.path.expanduser("~/.bookshelf")
 if not os.path.exists(DEFAULT_PATH):
     os.mkdir(DEFAULT_PATH)
@@ -26,6 +29,8 @@ class BooksConfig(dict):
     def _create_structure(self):
         self.setdefault("updated", int(time.time()))
         self.setdefault("bookShadows", True)
+        self.setdefault("recoverAutobackup", False)
+        self.setdefault("autobackupPath", "")
         self.setdefault("denyBookPaths", False)
         self.setdefault("shelfs", [])
         if len(self["shelfs"]) == 0:
@@ -41,6 +46,7 @@ class BooksConfig(dict):
         book["src"] = self._storage.to_book_path(file)
         book["thumbnail"] = None
         book["openCount"] = 0
+        book["mark"] = None
         self["shelfs"][shelf_index]["books"].append(book)
         self.save()
         return book
@@ -101,6 +107,7 @@ class BooksConfig(dict):
             self.update(json.load(fobj))
 
     def save(self):
+        self["app_version"] = BUILD_NUMBER
         self["updated"] = int(time.time())
         with open(self._path, "w", encoding="utf-8") as fobj:
             json.dump(self, fobj, ensure_ascii=False, indent=4)
@@ -123,9 +130,19 @@ class AppStorage:
         shelf = self.config["shelfs"][index]
         view = shelf["view"]
         if view != "default":
-            path = os.path.join(self.root, view)
+            path = os.path.join(self.root, "shelf_view", view)
             if os.path.exists(path):
                 return path
+
+    def shelf_views(self) -> List[str]:
+        paths = []
+        viewspath = os.path.join(self.root, "shelf_view")
+        for file in os.listdir(viewspath):
+            path = os.path.join(viewspath, file)
+            ext = os.path.splitext(path)[1]
+            if os.path.isfile(path) and ext in SUPPORTED_IMAGES:
+                paths.append(path)
+        return paths
 
     def _read_book_paths(self) -> List[str]:
         with open(
@@ -158,7 +175,7 @@ class AppStorage:
                         zippath = filepath.replace(self.root + os.sep, "")
                         zipobj.write(filepath, zippath)
 
-    def restore(self, backup_path) -> bool:
+    def restore(self, backup_path, save_thumbnails=False) -> bool:
         try:
             if os.path.commonpath(
                     [os.path.abspath(backup_path), self.root]) == self.root:
@@ -169,12 +186,14 @@ class AppStorage:
                 for name in os.listdir(self.root):
                     path = os.path.join(self.root, name)
                     if os.path.isdir(path):
-                        shutil.rmtree(path)
+                        if not (save_thumbnails
+                                and os.path.basename(path) == ".thumbnails"):
+                            shutil.rmtree(path)
                     else:
                         os.unlink(path)
                 zipobj.extractall(self.root)
                 self.create_files()
-                self.config = BooksConfig(os.path.join(self.root, "books.json"))
+                self.config = BooksConfig(self, os.path.join(self.root, "books.json"))
                 return True
         except Exception:
             traceback.print_exc()

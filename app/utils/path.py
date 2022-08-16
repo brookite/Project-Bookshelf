@@ -7,6 +7,10 @@ SUPPORTED_FORMATS_NAMES = "All formats (*.*);;PDF (*.pdf);;DJVU (*.djvu *.djv);;
                           "*.fb2z, *.zfb2);;CBZ (*.cbz)"
 SUPPORTED_IMAGES_NAMES = "Images (*.jpg *.jpeg *.png)"
 
+SUPPORTED_IMAGES = [
+    ".jpg", ".jpeg", ".png"
+]
+
 SUPPORTED_FORMATS = [
     ".pdf", ".djvu", ".djv", ".epub",
     ".mobi", ".azw", ".fb2", ".fb2z",

@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QCheckBox, QHBoxLayout, QLabel,
-    QPushButton, QScrollArea, QSizePolicy, QSpacerItem,
-    QTabWidget, QVBoxLayout, QWidget)
+    QLineEdit, QPushButton, QScrollArea, QSizePolicy,
+    QSpacerItem, QTabWidget, QVBoxLayout, QWidget)
 
 class Ui_Settings(object):
     def setupUi(self, Settings):
@@ -50,21 +50,17 @@ class Ui_Settings(object):
         self.shelfViewArea = QScrollArea(self.scrollAreaWidgetContents_2)
         self.shelfViewArea.setObjectName(u"shelfViewArea")
         self.shelfViewArea.setWidgetResizable(True)
-        self.scrollAreaWidgetContents_3 = QWidget()
-        self.scrollAreaWidgetContents_3.setObjectName(u"scrollAreaWidgetContents_3")
-        self.scrollAreaWidgetContents_3.setGeometry(QRect(0, 0, 347, 92))
-        self.verticalLayout_7 = QVBoxLayout(self.scrollAreaWidgetContents_3)
+        self.shelfViews = QWidget()
+        self.shelfViews.setObjectName(u"shelfViews")
+        self.shelfViews.setGeometry(QRect(0, 0, 347, 193))
+        self.verticalLayout_7 = QVBoxLayout(self.shelfViews)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.shelfViewArea.setWidget(self.scrollAreaWidgetContents_3)
+        self.shelfViewArea.setWidget(self.shelfViews)
 
         self.horizontalLayout_2.addWidget(self.shelfViewArea)
 
 
         self.verticalLayout_5.addLayout(self.horizontalLayout_2)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout_5.addItem(self.verticalSpacer_2)
 
         self.scrollArea_2.setWidget(self.scrollAreaWidgetContents_2)
 
@@ -80,7 +76,7 @@ class Ui_Settings(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 478, 215))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 353, 161))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.bookShadows = QCheckBox(self.scrollAreaWidgetContents)
@@ -108,6 +104,31 @@ class Ui_Settings(object):
 
 
         self.verticalLayout_3.addLayout(self.horizontalLayout)
+
+        self.horizontalLayout_3 = QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.label_3 = QLabel(self.scrollAreaWidgetContents)
+        self.label_3.setObjectName(u"label_3")
+
+        self.horizontalLayout_3.addWidget(self.label_3)
+
+        self.pathBackup = QLineEdit(self.scrollAreaWidgetContents)
+        self.pathBackup.setObjectName(u"pathBackup")
+
+        self.horizontalLayout_3.addWidget(self.pathBackup)
+
+        self.selectPath = QPushButton(self.scrollAreaWidgetContents)
+        self.selectPath.setObjectName(u"selectPath")
+
+        self.horizontalLayout_3.addWidget(self.selectPath)
+
+
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
+
+        self.recoverBookshelf = QCheckBox(self.scrollAreaWidgetContents)
+        self.recoverBookshelf.setObjectName(u"recoverBookshelf")
+
+        self.verticalLayout_3.addWidget(self.recoverBookshelf)
 
         self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
@@ -138,6 +159,9 @@ class Ui_Settings(object):
         self.denyBookPaths.setText(QCoreApplication.translate("Settings", u"Deny book paths usage", None))
         self.label.setText(QCoreApplication.translate("Settings", u"Book paths setup", None))
         self.setupBookPaths.setText(QCoreApplication.translate("Settings", u"Setup", None))
+        self.label_3.setText(QCoreApplication.translate("Settings", u"Path for autobackup on exit", None))
+        self.selectPath.setText(QCoreApplication.translate("Settings", u"Select", None))
+        self.recoverBookshelf.setText(QCoreApplication.translate("Settings", u"Automatically recover bookshelf by autobackup path", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), QCoreApplication.translate("Settings", u"App", None))
     # retranslateUi
 
