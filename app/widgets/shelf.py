@@ -80,8 +80,7 @@ class ShelfWidget(QWidget):
         if len(self.books) >= ShelfWidget.MAX_BOOKS_COUNT:
             return
         row = len(self.books) // self.row_capacity
-        if len(self.books) > self.row_capacity \
-                or len(self.books) % self.row_capacity == 1:
+        if len(self.books) > self.row_capacity:
             self._initialSpacer.changeSize(0, 0, QSizePolicy.Fixed, QSizePolicy.Fixed)
         else:
             self._initialSpacer.changeSize(0, 20, QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -93,7 +92,7 @@ class ShelfWidget(QWidget):
         column = len(self.books) % self.row_capacity
         self.books.append(book)
         self.grid.addWidget(book, self.current_row, column)
-        if len(self.books) % self.row_capacity == 1:
+        if len(self.books) % self.row_capacity == 1 and len(self.books) > self.row_capacity:
             self._initialSpacer.changeSize(0, 0, QSizePolicy.Fixed, QSizePolicy.Fixed)
 
     def render_books(self):
