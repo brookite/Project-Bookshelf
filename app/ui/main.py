@@ -55,6 +55,7 @@ class Ui_Bookshelf(object):
         self.tabWidget.setObjectName(u"tabWidget")
         self.tabWidget.setMinimumSize(QSize(410, 410))
         self.tabWidget.setTabsClosable(False)
+        self.tabWidget.setMovable(True)
         self.mainBookshelf = QWidget()
         self.mainBookshelf.setObjectName(u"mainBookshelf")
         self.verticalLayout_2 = QVBoxLayout(self.mainBookshelf)

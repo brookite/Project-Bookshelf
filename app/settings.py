@@ -3,11 +3,12 @@ from typing import List
 
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QPixmap, QCloseEvent
-from PySide6.QtWidgets import QDialog, QFileDialog, QRadioButton
+from PySide6.QtWidgets import QDialog, QFileDialog, QRadioButton, QApplication
 
 from app.storage import AppStorage
 from app.ui.settings import Ui_Settings
 from app.ui.bookspath import Ui_BooksPath
+from app.utils.applocale import tr
 from app.utils.path import BACKUP_FORMAT_NAME, BACKUP_FORMAT
 from app.widgets.shelf import ShelfWidget
 
@@ -37,7 +38,7 @@ class BookPathsSetupWindow(QDialog, Ui_BooksPath):
 
     def add_path(self):
         filename = QFileDialog.getExistingDirectory(
-            self, QApplication.instance().translate("", "Select directory"), "")
+            self, tr("Select directory"), "")
         filename = os.path.abspath(filename)
         for bookpath in self.storage.book_paths:
             if os.path.samefile(bookpath, filename):
@@ -75,12 +76,32 @@ class SettingsWindow(QDialog, Ui_Settings):
         self.storage = storage
         self._shelf_index = shelf_index
         self._shelfviews_rb: List[QRadioButton] = []
+        self._combobox_lock = False
         self.setupUi(self)
+        self.form_shelf_views()
+        self.load_shelf_list()
+
         self.set_settings()
         self.bookPathsDialog = None
         self.setupBookPaths.clicked.connect(self.open_path_setup_window)
         self.selectPath.clicked.connect(self.select_backuppath)
-        self.form_shelf_views()
+
+    def load_shelf_list(self):
+        for name in self.storage.config.shelf_names_list()[1:]:
+            self.defaultShelf.addItem(name)
+
+    def update_shelf_list(self):
+        self._combobox_lock = True
+        for i in range(1, self.defaultShelf.count()):
+            self.defaultShelf.removeItem(1)
+        for name in self.storage.config.shelf_names_list()[1:]:
+            self.defaultShelf.addItem(name)
+        self.defaultShelf.setCurrentIndex(self.storage.config["defaultShelf"])
+        self._combobox_lock = False
+
+    def show(self) -> None:
+        self.update_shelf_list()
+        super().show()
 
     def view_selected(self, checked):
         for rb in self._shelfviews_rb:
@@ -90,25 +111,27 @@ class SettingsWindow(QDialog, Ui_Settings):
 
     def form_shelf_views(self):
         default = QRadioButton()
-        default.setChecked(True)
         default.setObjectName("default")
         default.setIcon(ShelfWidget.BACKGROUND)
-        default.toggled.connect(self.view_selected)
         default.setIconSize(QSize(256, 84))
         self._shelfviews_rb.append(default)
         self.shelfViews.layout().addWidget(default)
+        checked = False
         for view in self.storage.shelf_views():
             basename = os.path.basename(view)
             shelfview = QRadioButton()
             if self.storage.shelf_view_path(self._shelf_index) == view:
                 shelfview.setChecked(True)
-                default.setChecked(False)
+                checked = True
             shelfview.setIcon(QPixmap(view))
             shelfview.toggled.connect(self.view_selected)
             shelfview.setIconSize(QSize(256, 84))
             shelfview.setObjectName(basename)
             self._shelfviews_rb.append(shelfview)
             self.shelfViews.layout().addWidget(shelfview)
+        default.toggled.connect(self.view_selected)
+        if not checked:
+            default.setChecked(True)
 
     def open_path_setup_window(self):
         self.bookPathsDialog = BookPathsSetupWindow(self, self.storage)
@@ -116,7 +139,7 @@ class SettingsWindow(QDialog, Ui_Settings):
 
     def select_backuppath(self):
         filename = QFileDialog.getSaveFileName(
-            self, QApplication.instance().translate("", "Select path for autobackup"), "",
+            self, tr("Select path for autobackup"), "",
             BACKUP_FORMAT_NAME
         )[0]
         if not filename.endswith(BACKUP_FORMAT):
@@ -134,16 +157,20 @@ class SettingsWindow(QDialog, Ui_Settings):
                 self.storage.config.convert_to_bookpaths()
             else:
                 self.storage.config.convert_to_explicit_paths()
+        if not self._combobox_lock:
+            self.storage.config["defaultShelf"] = self.defaultShelf.currentIndex()
         self.storage.save()
 
     def set_settings(self):
         self.denyBookPaths.setChecked(self.storage.config["denyBookPaths"])
         self.bookShadows.setChecked(self.storage.config["bookShadows"])
+        self.defaultShelf.setCurrentIndex(self.storage.config["defaultShelf"])
         self.recoverBookshelf.setChecked(self.storage.config["recoverAutobackup"])
         self.bookShadows.stateChanged.connect(self.poll_settings)
         self.denyBookPaths.stateChanged.connect(self.poll_settings)
         self.recoverBookshelf.stateChanged.connect(self.poll_settings)
         self.pathBackup.setText(self.storage.config["autobackupPath"])
+        self.defaultShelf.currentIndexChanged.connect(self.poll_settings)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.storage.save()

@@ -1,5 +1,6 @@
 import hashlib
 import os.path
+import sys
 import warnings
 from typing import List, Optional
 import threading
@@ -129,23 +130,26 @@ class Thumbnailer:
 
     def _thread_loader(self, books: List[BookWidget]):
         for book in books:
-            if book.metadata["thumbnail"]:
-                if os.path.exists(self.resolve_path(book.metadata["thumbnail"])):
-                    book.update_thumbnail()
+            try:
+                if book.metadata["thumbnail"]:
+                    if os.path.exists(self.resolve_path(book.metadata["thumbnail"])):
+                        book.update_thumbnail()
+                        continue
+                ext = os.path.splitext(self.settings.config.booksrc(book.metadata))[-1]
+                if ext not in SUPPORTED_THUMBNAIL_FORMATS:
                     continue
-            ext = os.path.splitext(self.settings.config.booksrc(book.metadata))[-1]
-            if ext not in SUPPORTED_THUMBNAIL_FORMATS:
-                continue
-            if ext in [".djv", ".djvu"]:
-                if DJVU_THUMBNAILES:
-                    image = self._gen_thumbnail_djvulibre(self.settings.config.booksrc(book.metadata))
-                    if image:
-                        self._save(book, image)
-            else:
-                if MUPDF_THUMBNAILES:
-                    image = self._gen_thumbnail_mupdf(self.settings.config.booksrc(book.metadata))
-                    if image:
-                        self._save(book, image)
+                if ext in [".djv", ".djvu"]:
+                    if DJVU_THUMBNAILES:
+                        image = self._gen_thumbnail_djvulibre(self.settings.config.booksrc(book.metadata))
+                        if image:
+                            self._save(book, image)
+                else:
+                    if MUPDF_THUMBNAILES:
+                        image = self._gen_thumbnail_mupdf(self.settings.config.booksrc(book.metadata))
+                        if image:
+                            self._save(book, image)
+            except Exception as e:
+                print(type(e).__name__, ':', str(e), file=sys.stderr)
         self.settings.config.save()
 
     @property

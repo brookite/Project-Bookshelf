@@ -32,6 +32,9 @@
       <property name="tabsClosable">
        <bool>false</bool>
       </property>
+      <property name="movable">
+       <bool>true</bool>
+      </property>
       <widget class="QWidget" name="mainBookshelf">
        <attribute name="title">
         <string>My books</string>

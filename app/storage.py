@@ -28,6 +28,7 @@ class BooksConfig(dict):
 
     def _create_structure(self):
         self.setdefault("updated", int(time.time()))
+        self.setdefault("defaultShelf", 0)
         self.setdefault("bookShadows", True)
         self.setdefault("recoverAutobackup", False)
         self.setdefault("autobackupPath", "")
@@ -36,6 +37,12 @@ class BooksConfig(dict):
         if len(self["shelfs"]) == 0:
             self.add_shelf("$DEFAULT_NAME")
         self.save()
+
+    def move_shelfs(self, from_, to):
+        i = self["defaultShelf"]
+        defaultShelf = self["shelfs"][i]
+        self["shelfs"].insert(to, self["shelfs"].pop(from_))
+        self["defaultShelf"] = self["shelfs"].index(defaultShelf)
 
     def add_file(self, shelf_index: int, file: Union[os.PathLike, str]) -> Optional[dict]:
         for bookdata in self.get_books(shelf_index):
@@ -84,6 +91,12 @@ class BooksConfig(dict):
                 self["shelfs"][shelf_index]["books"].remove(metadata)
             else:
                 warnings.warn("Book wasn't found in specified shelf")
+
+    def shelf_names_list(self) -> List[str]:
+        names = []
+        for shelf in self["shelfs"]:
+            names.append(shelf["name"])
+        return names
 
     def add_shelf(self, name) -> Tuple[int, dict]:
         shelf = {}

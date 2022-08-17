@@ -3,7 +3,7 @@ import os
 from typing import List
 
 from PySide6.QtCore import QMimeData, QTimerEvent
-from PySide6.QtGui import QPixmap, QPalette, QDragEnterEvent, QDropEvent, QResizeEvent
+from PySide6.QtGui import QPixmap, QPalette, QDragEnterEvent, QDropEvent, QResizeEvent, QDragMoveEvent, QCursor
 from PySide6.QtWidgets import QWidget, QSizePolicy, QGridLayout, QSpacerItem
 
 from app.storage import BooksConfig
@@ -21,6 +21,8 @@ class ShelfWidget(QWidget):
         self.loaded = False
         self._owner = owner
         self.current_row = 1
+        self.drag_state = False
+        self.scrollArea = None
         self.metadata = metadata
         self.previous_row = 0
         self.selected_count = 0
@@ -94,49 +96,13 @@ class ShelfWidget(QWidget):
         if len(self.books) % self.row_capacity == 1:
             self._initialSpacer.changeSize(0, 0, QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-    def render_books(self, row_constraints=None):
+    def render_books(self):
+        print("Rendering {} books".format(len(self.books)))
         self._initialize_grid()
         books = self.books
         self.books = []
         for book in books:
             self.add_book(book)
-        #TODO: failed optimization attempts. It is needed more investigation
-        '''
-        if not row_constraints:
-            self._initialize_grid()
-            books = self.books
-            self.books = []
-            for book in books:
-                self.add_book(book)
-        else:
-            row_constraints = list(sorted(row_constraints))
-            row_constraints[1] += 1
-            begin = self._book_index(row_constraints[0], 0)
-            end = self._book_index(row_constraints[1] - 1, self.row_capacity - 1)
-            index = self._book_index(row_constraints[0], 0) + 2 * row_constraints[0]
-            # index+4 because first and second item at all layout is spacers
-            row_count = row_constraints[1] - row_constraints[0]
-            skip_spacers = 2 * (row_count - 1)
-            # first and second item in each row is spacer
-            for i in range(row_count * self.row_capacity + skip_spacers):
-                item = self.grid.takeAt(index)
-                if item.widget():
-                    self.grid.removeWidget(item.widget())
-                    item.widget().setParent(None)
-                else:
-                    self.grid.removeItem(item)
-            print(row_constraints)
-            prev_row = self._find_by_index(begin)[0]
-            for i in range(begin, end + 1):
-                row, column = self._find_by_index(i)
-                if row != prev_row:
-                    self.grid.addItem(QSpacerItem(0, 167, QSizePolicy.Fixed, QSizePolicy.Fixed), row, 0)
-                    self.grid.addItem(QSpacerItem(0, 167, QSizePolicy.Fixed, QSizePolicy.Fixed), row, 0)
-                    prev_row = row
-                self.grid.addWidget(self.books[i], row, column)
-            for i in range(20):
-                print(self.grid.itemAt(i))
-        '''
 
     def open_selected_books(self):
         for book in self.books:
@@ -178,6 +144,24 @@ class ShelfWidget(QWidget):
         formats = event.mimeData().formats()
         if 'application/x-bookshelf-book' in formats:
             event.acceptProposedAction()
+
+    def dragMoveEvent(self, event: QDragMoveEvent) -> None:
+        if self.drag_state:
+            pos = self.scrollArea.mapFromGlobal(QCursor.pos())
+            scroll_max_y = self.scrollArea.size().height()
+            max_y = self.size().height()
+            bar = self.scrollArea.verticalScrollBar()
+            if scroll_max_y != max_y:
+                step = 0
+                if abs(pos.y() - scroll_max_y) <= 15:
+                    step = 25
+                elif abs(pos.y() - scroll_max_y) <= 45:
+                    step = 15
+
+                if bar.value() > 0 and pos.y() <= 30:
+                    step = -15
+
+                bar.setValue(bar.value() + step)
 
     def dropEvent(self, event: QDropEvent) -> None:
         new_index = self._find_book_by_pos(event.pos())
@@ -224,16 +208,12 @@ class ShelfWidget(QWidget):
                 return self._book_index(row, min_index[1]) + 1
 
     def replace_book(self, old_index, new_index):
-        old_row = self._find_by_index(old_index)[0]
-        new_row = self._find_by_index(new_index)[0]
-        print("index check", old_index, new_index)
-
         self.books.insert(new_index, self.books[old_index])
         if old_index <= new_index:
             self.books.pop(old_index)
         else:
             self.books.pop(old_index + 1)
-        self.render_books((old_row, new_row))
+        self.render_books()
         self.owner.rebuild_book_order()
 
     def pop_book(self, book, update_ui=True):

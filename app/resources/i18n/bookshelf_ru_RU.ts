@@ -34,100 +34,105 @@
         <translation>Установить эскиз из хранилища</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="74"/>
-        <location filename="../../window.py" line="218"/>
+        <location filename="../../window.py" line="95"/>
+        <location filename="../../window.py" line="258"/>
         <source>Restore failed</source>
         <translation>Восстановлено завершилось с ошибкой</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="75"/>
-        <location filename="../../window.py" line="219"/>
+        <location filename="../../window.py" line="96"/>
+        <location filename="../../window.py" line="259"/>
         <source>Backup wasn&apos;t restored. Check if your backup is valid</source>
         <translation>Резервная копия не была восстановлена. Проверьте, что ваша резервная копия корректна</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="114"/>
+        <location filename="../../window.py" line="135"/>
         <source>Remove shelf</source>
         <translation>Удалить полку</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="176"/>
-        <location filename="../../window.py" line="241"/>
+        <location filename="../../window.py" line="216"/>
+        <location filename="../../window.py" line="281"/>
         <source>Limit has reached</source>
         <translation>Превышен лимит</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="177"/>
+        <location filename="../../window.py" line="217"/>
         <source>You may create only {} shelfs</source>
         <translation>Вы можете создать только {} полок</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="181"/>
+        <location filename="../../window.py" line="221"/>
         <source>Adding new shelf</source>
         <translation>Добавление новой полки</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="183"/>
+        <location filename="../../window.py" line="223"/>
         <source>Input name of your new shelf</source>
         <translation>Введите имя вашей новой полки</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="195"/>
+        <location filename="../../window.py" line="235"/>
         <source>Export backup</source>
         <translation>Экспортирование резервной копии</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="205"/>
+        <location filename="../../window.py" line="245"/>
         <source>Import backup</source>
         <translation>Импортирование резервной копии</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="209"/>
+        <location filename="../../window.py" line="249"/>
         <source>Data erase warning</source>
         <translation>Предупреждение о стирании данных</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="211"/>
+        <location filename="../../window.py" line="251"/>
         <source>Your books and all app information will be replaced by backup data. Are you sure?</source>
         <translation>Все ваши книги и настройки будут заменены данными резервной копии. Вы уверены?</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="222"/>
+        <location filename="../../window.py" line="262"/>
         <source>Restore finished</source>
         <translation>Восстановление завершено</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="224"/>
+        <location filename="../../window.py" line="264"/>
         <source>Backup has been restored successfully. Application will be closed, please open it again</source>
         <translation>Резервная копия была восстановлена. Приложение будет закрыто, пожалуйста, запустите его снова</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="230"/>
+        <location filename="../../window.py" line="270"/>
         <source>Adding books</source>
         <translation>Добавление книг</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="248"/>
+        <location filename="../../window.py" line="283"/>
+        <source>You may place in one shelf only {} books</source>
+        <translation>Вы можете размещать на одной полке только {} книг</translation>
+    </message>
+    <message>
+        <location filename="../../window.py" line="288"/>
         <source>About Project Bookshelf</source>
         <translation>О Project Bookshelf</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="250"/>
+        <location filename="../../window.py" line="290"/>
         <source>Elegant bookshelf for your documents</source>
         <translation>Элегантная книжная полка для ваших документов</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="251"/>
+        <location filename="../../window.py" line="291"/>
         <source>Author: </source>
         <translation>Разработчик: </translation>
     </message>
     <message>
-        <location filename="../../settings.py" line="40"/>
+        <location filename="../../settings.py" line="41"/>
         <source>Select directory</source>
         <translation>Выберите директорию</translation>
     </message>
     <message>
-        <location filename="../../settings.py" line="119"/>
+        <location filename="../../settings.py" line="142"/>
         <source>Select path for autobackup</source>
         <translation>Выберите путь для авторезервирования</translation>
     </message>
@@ -183,72 +188,72 @@
         <translation>Project Bookshelf</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="37"/>
+        <location filename="../../ui/main.ui" line="40"/>
         <source>My books</source>
         <translation>Мои книги</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="74"/>
+        <location filename="../../ui/main.ui" line="77"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="83"/>
+        <location filename="../../ui/main.ui" line="86"/>
         <source>Tools</source>
         <translation>Инструменты</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="92"/>
+        <location filename="../../ui/main.ui" line="95"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="103"/>
+        <location filename="../../ui/main.ui" line="106"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="108"/>
+        <location filename="../../ui/main.ui" line="111"/>
         <source>Export</source>
         <translation>Экспорт резервной копии</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="113"/>
+        <location filename="../../ui/main.ui" line="116"/>
         <source>Import</source>
         <translation>Импорт резервной копии</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="118"/>
+        <location filename="../../ui/main.ui" line="121"/>
         <source>Exit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="123"/>
+        <location filename="../../ui/main.ui" line="126"/>
         <source>Add new shelf</source>
         <translation>Добавить новую полку</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="128"/>
+        <location filename="../../ui/main.ui" line="131"/>
         <source>About Qt</source>
         <translation>О Qt</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="133"/>
+        <location filename="../../ui/main.ui" line="136"/>
         <source>About</source>
         <translation>О приложении</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="138"/>
+        <location filename="../../ui/main.ui" line="141"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="146"/>
+        <location filename="../../ui/main.ui" line="149"/>
         <source>Selection mode</source>
         <translation>Режим выделения</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="151"/>
+        <location filename="../../ui/main.ui" line="154"/>
         <source>Remove selected shelf</source>
         <translation>Удалить выбранную полку</translation>
     </message>
@@ -309,6 +314,16 @@
         <location filename="../../ui/settings.ui" line="156"/>
         <source>Automatically recover bookshelf by autobackup path</source>
         <translation>Автоматически восстанавливать автоматическую резервную копию</translation>
+    </message>
+    <message>
+        <location filename="../../ui/settings.ui" line="165"/>
+        <source>Default shelf</source>
+        <translation>Полка по умолчанию</translation>
+    </message>
+    <message>
+        <location filename="../../ui/settings.ui" line="173"/>
+        <source>My books</source>
+        <translation>Мои книги</translation>
     </message>
 </context>
 </TS>

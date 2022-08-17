@@ -3,6 +3,7 @@ from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag
 from PySide6.QtWidgets import QLabel, QSizePolicy, QApplication, \
     QMenu, QFileDialog, QGraphicsDropShadowEffect
 
+from app.utils.applocale import tr
 from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES_NAMES
 
 
@@ -36,19 +37,19 @@ class BookWidget(QLabel):
 
     def _book_menu(self) -> QMenu:
         menu = QMenu(self)
-        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Set thumbnail"))
+        thumbnailAction = menu.addAction(tr("Set thumbnail"))
         thumbnailAction.triggered.connect(self.set_external_thumbnail)
-        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Reset thumbnail"))
+        thumbnailAction = menu.addAction(tr("Reset thumbnail"))
         thumbnailAction.triggered.connect(self.reset_thumbnail)
-        removeAction = menu.addAction(QApplication.instance().translate("", "Remove book"))
+        removeAction = menu.addAction(tr("Remove book"))
         removeAction.triggered.connect(self.remove)
         return menu
 
     def _selection_menu(self) -> QMenu:
         menu = QMenu(self)
-        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Open selected books"))
+        thumbnailAction = menu.addAction(tr("Open selected books"))
         thumbnailAction.triggered.connect(self.owner.open_selected_books)
-        thumbnailAction = menu.addAction(QApplication.instance().translate("", "Remove selected books"))
+        thumbnailAction = menu.addAction(tr("Remove selected books"))
         thumbnailAction.triggered.connect(self.owner.remove_selected_books)
         return menu
 
@@ -57,7 +58,7 @@ class BookWidget(QLabel):
 
     def set_external_thumbnail(self):
         filename = QFileDialog.getOpenFileName(
-            self, QApplication.instance().translate("", "Set external thumbnails"), "",
+            self, tr("Set external thumbnails"), "",
             SUPPORTED_IMAGES_NAMES
         )[0]
         self._thumbnailer.load_external_thumbnail(self, filename)
@@ -70,8 +71,12 @@ class BookWidget(QLabel):
         if update_ui:
             self.owner.pop_book(self)
 
+    def set_drag(self, value):
+        self._drag_start = value
+        self.owner.drag_state = value is not None
+
     def mousePressEvent(self, event: QMouseEvent) -> None:
-        self._drag_start = event.pos()
+        self.set_drag(event.pos())
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         if (event.buttons() == Qt.LeftButton) and \
@@ -85,11 +90,11 @@ class BookWidget(QLabel):
             self.hide()
             action = drag.exec(Qt.MoveAction)
             if action == Qt.IgnoreAction:
-                self._drag_start = None
                 self.show()
+            self.set_drag(None)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        self._drag_start = None
+        self.set_drag(None)
         if event.button() == Qt.RightButton:
             if self.owner.owner.is_selection_mode():
                 self._selection_menu().exec(event.globalPos())

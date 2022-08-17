@@ -89,8 +89,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>353</width>
-            <height>161</height>
+            <width>478</width>
+            <height>215</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -156,6 +156,26 @@
               <string>Automatically recover bookshelf by autobackup path</string>
              </property>
             </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Default shelf</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="defaultShelf">
+               <item>
+                <property name="text">
+                 <string>My books</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
            </item>
            <item>
             <spacer name="verticalSpacer">

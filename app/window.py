@@ -8,6 +8,7 @@ from app.settings import SettingsWindow, BookPathsSetupWindow
 from app.storage import AppStorage
 from app.thumbnailer import Thumbnailer
 from app.ui.main import Ui_Bookshelf
+from app.utils.applocale import tr
 from app.utils.path import SUPPORTED_FORMATS_NAMES, SUPPORTED_FORMATS, resolve_path, BACKUP_FORMAT_NAME, BACKUP_FORMAT
 from app.widgets.book import BookWidget
 from app.widgets.shelf import ShelfWidget
@@ -25,6 +26,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.check_autorecover()
         self.check_book_paths()
         self._ctrl_pressed = False
+        self._tab_revert_action = False
         self.setupUi(self)
         self.shelfs = []
         self.load_shelfs()
@@ -36,6 +38,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.tabWidget.currentChanged.connect(self._tab_changed)
         self.tabWidget.tabBar().tabBarDoubleClicked.connect(self._tab_menu)
+        self.tabWidget.tabBar().tabMoved.connect(self._tab_moved)
 
         self.actionOpen.triggered.connect(self.add_books)
         self.actionImport.triggered.connect(self.import_backup)
@@ -55,6 +58,9 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.thumbnailer = Thumbnailer(self.settings)
         self.load_books()
         self.get_current_shelf().set_background()
+        self.get_current_shelf().scrollArea = self.scrollArea
+        if self.settings.config["defaultShelf"] != 0:
+            self.tabWidget.setCurrentIndex(self.settings.config["defaultShelf"])
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.settings.save()
@@ -75,7 +81,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.killTimer(self.__resize_timerid)
         self.__resize_timerid = 0
         if self.isVisible():
-            self.get_current_shelf().row_capacity = self.size().width() // 128
+            for shelf in self.shelfs:
+                shelf.row_capacity = self.size().width() // 128
             self.get_current_shelf().render_books()
 
     def check_autorecover(self):
@@ -86,8 +93,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
                 if not result:
                     QMessageBox.critical(
                         self,
-                        QApplication.instance().translate("", "Restore failed"),
-                        QApplication.instance().translate("", "Backup wasn't restored. Check if your backup is valid"))
+                        tr("Restore failed"),
+                        tr("Backup wasn't restored. Check if your backup is valid"))
                 print("Auto restore performed")
 
     def check_book_paths(self):
@@ -104,6 +111,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if not self.get_current_shelf().loaded:
             self.load_books()
             self.get_current_shelf().set_background()
+        self.get_current_shelf().render_books()
 
     def open_settings(self):
         if not self.settings_window:
@@ -126,9 +134,20 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def _tab_menu(self, index):
         self._selected_shelf_index = index
         menu = QMenu()
-        removeAction = menu.addAction(QApplication.instance().translate("", "Remove shelf"))
+        removeAction = menu.addAction(tr("Remove shelf"))
         removeAction.triggered.connect(self.remove_shelf)
         menu.exec(QCursor.pos())
+
+    def _tab_moved(self, from_, to):
+        if self._tab_revert_action:
+            self._tab_revert_action = False
+            return
+        if to == 0 or from_ == 0:
+            self._tab_revert_action = True
+            self.tabWidget.tabBar().moveTab(to, from_)
+            return
+        self.settings.config.move_shelfs(from_, to)
+        self.settings.config.save()
 
     @property
     def ctrl_pressed(self):
@@ -175,6 +194,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         shelf.setGeometry(QRect(0, 0, 386, 397))
         shelf.scrollbar = scrollArea.verticalScrollBar()
         scrollArea.setWidget(shelf)
+        shelf.scrollArea = scrollArea
         vbox.addWidget(scrollArea)
         return bookshelf
 
@@ -195,13 +215,13 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def add_shelf(self):
         if len(self.shelfs) >= self.MAX_SHELFS_COUNT:
             QMessageBox.warning(
-                self, QApplication.instance().translate("", "Limit has reached"),
-                QApplication.instance().translate("", "You may create only {} shelfs").format(self.MAX_SHELFS_COUNT))
+                self, tr("Limit has reached"),
+                tr("You may create only {} shelfs").format(self.MAX_SHELFS_COUNT))
             return
         name, success = QInputDialog.getText(
             self,
-            QApplication.instance().translate("", "Adding new shelf"),
-            QApplication.instance().translate("", "Input name of your new shelf")
+            tr("Adding new shelf"),
+            tr("Input name of your new shelf")
         )
         if success:
             index, metadata = self.settings.config.add_shelf(name)
@@ -214,7 +234,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
 
     def export(self):
         filename = QFileDialog.getSaveFileName(
-            self, QApplication.instance().translate("", "Export backup"), "",
+            self, tr("Export backup"), "",
             BACKUP_FORMAT_NAME
         )[0]
         if filename:
@@ -224,12 +244,12 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
 
     def import_backup(self):
         filename = QFileDialog.getOpenFileName(
-            self, QApplication.instance().translate("", "Import backup"), "",
+            self, tr("Import backup"), "",
             BACKUP_FORMAT_NAME
         )[0]
         confirm = QMessageBox.question(self,
-                             QApplication.instance().translate("", "Data erase warning"),
-                             QApplication.instance().translate("", "Your books and all app information will be replaced "
+                             tr("Data erase warning"),
+                             tr("Your books and all app information will be replaced "
                                      "by backup data. Are you sure?"))
         if confirm != QMessageBox.StandardButton.Yes:
             return
@@ -237,19 +257,19 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.check_book_paths()
         if not result:
             QMessageBox.critical(self,
-                                 QApplication.instance().translate("", "Restore failed"),
-                                 QApplication.instance().translate("", "Backup wasn't restored. Check if your backup is valid"))
+                                 tr("Restore failed"),
+                                 tr("Backup wasn't restored. Check if your backup is valid"))
         else:
             QMessageBox.information(self,
-                                    QApplication.instance().translate("", "Restore finished"),
-                                    QApplication.instance().translate("", "Backup has been restored successfully. "
+                                    tr("Restore finished"),
+                                    tr("Backup has been restored successfully. "
                                             "Application will be closed, please open it again"))
             self.close()
 
     def add_books(self):
         default_dir = "" if len(self.settings.book_paths) == 0 else self.settings.book_paths[0]
         filenames = QFileDialog.getOpenFileNames(
-            self, QApplication.instance().translate("", "Adding books"), default_dir,
+            self, tr("Adding books"), default_dir,
             SUPPORTED_FORMATS_NAMES
         )
         for file in filenames[0]:
@@ -260,16 +280,16 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
                         self.load_book(metadata)
                 else:
                     QMessageBox.warning(
-                        self, QApplication.instance().translate("", "Limit has reached"),
-                        QApplication.instance().translate("", "You may place in one shelf only {} books"
+                        self, tr("Limit has reached"),
+                        tr("You may place in one shelf only {} books"
                                                           .format(ShelfWidget.MAX_BOOKS_COUNT)))
                     break
         self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
 
     def about(self):
-        QMessageBox.about(self, QApplication.instance().translate("", "About Project Bookshelf"),
+        QMessageBox.about(self, tr("About Project Bookshelf"),
                                 '<p><b>' + f'Project Bookshelf {VERSION_NAME}' + '</b></p>'
-                                 + QApplication.instance().translate("", 'Elegant bookshelf for your documents') + '<br>'
-                                 + QApplication.instance().translate("", 'Author: ') + "Brookit, 2022"
+                                 + tr('Elegant bookshelf for your documents') + '<br>'
+                                 + tr('Author: ') + "Brookit, 2022"
                                  + '<br><a href="https://github.com/brookite">GitHub</a>')
 
