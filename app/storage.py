@@ -9,7 +9,7 @@ from zipfile import ZipFile
 from typing import Union, List, Dict, Optional, Tuple
 
 from app.appinfo import BUILD_NUMBER
-from app.utils.path import SUPPORTED_IMAGES
+from app.utils.path import SUPPORTED_IMAGES, commonpath
 
 DEFAULT_PATH = os.path.expanduser("~/.bookshelf")
 if not os.path.exists(DEFAULT_PATH):
@@ -29,6 +29,7 @@ class BooksConfig(dict):
     def _create_structure(self):
         self.setdefault("updated", int(time.time()))
         self.setdefault("defaultShelf", 0)
+        self.setdefault("storeThumbnails", False)
         self.setdefault("bookShadows", True)
         self.setdefault("recoverAutobackup", False)
         self.setdefault("autobackupPath", "")
@@ -177,8 +178,8 @@ class AppStorage:
         self.config.save()
         self._write_book_paths()
 
-    def backup(self, output_path) -> None:
-        exclude = [".thumbnails"]
+    def backup(self, output_path, save_thumbnails=False) -> None:
+        exclude = [".thumbnails"] if not save_thumbnails else []
         with ZipFile(output_path, 'w') as zipobj:
             for folder, subfolders, filenames in os.walk(self.root):
                 for filename in filenames:
@@ -189,8 +190,9 @@ class AppStorage:
                         zipobj.write(filepath, zippath)
 
     def restore(self, backup_path, save_thumbnails=False) -> bool:
+        oldBackupPath = self.config["autobackupPath"]
         try:
-            if os.path.commonpath(
+            if commonpath(
                     [os.path.abspath(backup_path), self.root]) == self.root:
                 return False
             with ZipFile(backup_path) as zipobj:
@@ -207,6 +209,9 @@ class AppStorage:
                 zipobj.extractall(self.root)
                 self.create_files()
                 self.config = BooksConfig(self, os.path.join(self.root, "books.json"))
+                self.book_paths = self._read_book_paths()
+                self.config["autobackupPath"] = oldBackupPath
+                self.config.save()
                 return True
         except Exception:
             traceback.print_exc()
@@ -248,7 +253,7 @@ class AppStorage:
     def to_book_path(self, path) -> str:
         for bookpath in self.book_paths:
             bookpath = os.path.abspath(bookpath)
-            if os.path.commonpath([bookpath, os.path.abspath(path)]) == bookpath:
+            if commonpath([bookpath, os.path.abspath(path)]) == bookpath:
                 return os.path.abspath(path).replace(bookpath, "$BOOKS_PATH")
         return os.path.abspath(path)
 

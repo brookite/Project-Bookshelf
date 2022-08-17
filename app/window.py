@@ -68,7 +68,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if os.path.exists(os.path.dirname(filename)) and filename.strip():
             if not filename.endswith(BACKUP_FORMAT):
                 filename = filename + BACKUP_FORMAT
-            self.settings.backup(filename)
+            self.settings.backup(filename, self.settings.config["storeThumbnails"])
 
     def resizeEvent(self, event: QResizeEvent) -> None:
         # This cooldown required for smooth rendering
@@ -89,7 +89,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if self.settings.config["recoverAutobackup"]:
             path = self.settings.config["autobackupPath"]
             if os.path.exists(path) and path.strip():
-                result = self.settings.restore(path, True)
+                result = self.settings.restore(path, not self.settings.config["storeThumbnails"])
                 if not result:
                     QMessageBox.critical(
                         self,
@@ -99,10 +99,10 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
 
     def check_book_paths(self):
         if self.settings.config.uses_book_paths():
-            is_any_unexists = len(self.settings.book_paths) == 0
+            is_all_unexists = True
             for path in self.settings.book_paths:
-                is_any_unexists |= not os.path.exists(path)
-            if is_any_unexists:
+                is_all_unexists &= not os.path.exists(path)
+            if is_all_unexists:
                 self._tmp_bookpathdialog = BookPathsSetupWindow(self, self.settings)
                 self._tmp_bookpathdialog.exec()
 
@@ -114,8 +114,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.get_current_shelf().render_books()
 
     def open_settings(self):
-        if not self.settings_window:
-            self.settings_window = SettingsWindow(self, self.shelf_index, self.settings)
+        self.settings_window = SettingsWindow(self, self.shelf_index, self.settings)
         self.settings_window.show()
 
     def remove_shelf(self):
@@ -240,7 +239,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if filename:
             if not filename.endswith(BACKUP_FORMAT):
                 filename = filename + BACKUP_FORMAT
-            self.settings.backup(filename)
+            self.settings.backup(filename, self.settings.config["storeThumbnails"])
 
     def import_backup(self):
         filename = QFileDialog.getOpenFileName(
@@ -253,7 +252,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
                                      "by backup data. Are you sure?"))
         if confirm != QMessageBox.StandardButton.Yes:
             return
-        result = self.settings.restore(filename)
+        result = self.settings.restore(filename, not self.settings.config["storeThumbnails"])
         self.check_book_paths()
         if not result:
             QMessageBox.critical(self,

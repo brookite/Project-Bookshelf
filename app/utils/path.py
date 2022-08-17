@@ -1,6 +1,7 @@
 import os
 import subprocess
 import platform
+from typing import List
 
 SUPPORTED_FORMATS_NAMES = "All formats (*.*);;PDF (*.pdf);;DJVU (*.djvu *.djv);;EPUB (*.epub)" \
                           ";;MOBI (*.mobi *.azw);;FictionBook (*.fb2, " \
@@ -35,3 +36,10 @@ def open_file(filepath: str):
         subprocess.call(('open', filepath))
     else:
         subprocess.call(('xdg-open', filepath))
+
+
+def commonpath(paths: List[str]):
+    try:
+        return os.path.commonpath(paths)
+    except ValueError:
+        return ''

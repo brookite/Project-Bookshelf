@@ -77,7 +77,7 @@ class Ui_Settings(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 478, 215))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 464, 219))
         self.verticalLayout_3 = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.bookShadows = QCheckBox(self.scrollAreaWidgetContents)
@@ -89,6 +89,11 @@ class Ui_Settings(object):
         self.denyBookPaths.setObjectName(u"denyBookPaths")
 
         self.verticalLayout_3.addWidget(self.denyBookPaths)
+
+        self.storeThumbnails = QCheckBox(self.scrollAreaWidgetContents)
+        self.storeThumbnails.setObjectName(u"storeThumbnails")
+
+        self.verticalLayout_3.addWidget(self.storeThumbnails)
 
         self.horizontalLayout = QHBoxLayout()
         self.horizontalLayout.setSpacing(0)
@@ -174,6 +179,7 @@ class Ui_Settings(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), QCoreApplication.translate("Settings", u"Shelf", None))
         self.bookShadows.setText(QCoreApplication.translate("Settings", u"Book shadows", None))
         self.denyBookPaths.setText(QCoreApplication.translate("Settings", u"Deny book paths usage", None))
+        self.storeThumbnails.setText(QCoreApplication.translate("Settings", u"Store thumbnails in backup", None))
         self.label.setText(QCoreApplication.translate("Settings", u"Book paths setup", None))
         self.setupBookPaths.setText(QCoreApplication.translate("Settings", u"Setup", None))
         self.label_3.setText(QCoreApplication.translate("Settings", u"Path for autobackup on exit", None))

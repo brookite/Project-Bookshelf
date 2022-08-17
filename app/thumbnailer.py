@@ -111,7 +111,7 @@ class Thumbnailer:
         self.settings.config.save()
 
     def _save(self, book: BookWidget, image: QImage) -> None:
-        name = self._hashed_name(self.settings.config.booksrc(book.metadata)) + ".png"
+        name = self._hashed_name(book.metadata["src"]) + ".png"
         image.save(os.path.join(self._dir, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_THUMBNAIL_PATH/{name}"
         book.set_thumbnail(QPixmap.fromImage(image))

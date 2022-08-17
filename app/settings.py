@@ -41,8 +41,9 @@ class BookPathsSetupWindow(QDialog, Ui_BooksPath):
             self, tr("Select directory"), "")
         filename = os.path.abspath(filename)
         for bookpath in self.storage.book_paths:
-            if os.path.samefile(bookpath, filename):
-                return
+            if os.path.exists(bookpath):
+                if os.path.samefile(bookpath, filename):
+                    return
         index = self._index() + 1
         self.listWidget.insertItem(index, filename)
         self.storage.book_paths.insert(index, filename)
@@ -50,11 +51,13 @@ class BookPathsSetupWindow(QDialog, Ui_BooksPath):
     def remove_path(self):
         for item in self.listWidget.selectedItems():
             self.listWidget.takeItem(self.listWidget.row(item))
+            self.storage.book_paths.remove(item.text())
 
     def up(self):
         row = self._index()
         item = self.listWidget.takeItem(row)
         self.listWidget.insertItem(row - 1, item)
+        self.listWidget.setCurrentRow(row - 1)
         path = self.storage.book_paths.pop(row)
         self.storage.book_paths.insert(row - 1, path)
 
@@ -62,6 +65,7 @@ class BookPathsSetupWindow(QDialog, Ui_BooksPath):
         row = self._index()
         item = self.listWidget.takeItem(row)
         self.listWidget.insertItem(row + 1, item)
+        self.listWidget.setCurrentRow(row + 1)
         path = self.storage.book_paths.pop(row)
         self.storage.book_paths.insert(row + 1, path)
 
@@ -151,6 +155,7 @@ class SettingsWindow(QDialog, Ui_Settings):
     def poll_settings(self):
         self.storage.config["bookShadows"] = self.bookShadows.isChecked()
         self.storage.config["recoverAutobackup"] = self.recoverBookshelf.isChecked()
+        self.storage.config["storeThumbnails"] = self.storeThumbnails.isChecked()
         if self.denyBookPaths.isChecked() != self.storage.config["denyBookPaths"]:
             self.storage.config["denyBookPaths"] = self.denyBookPaths.isChecked()
             if not self.storage.config["denyBookPaths"]:
@@ -164,8 +169,10 @@ class SettingsWindow(QDialog, Ui_Settings):
     def set_settings(self):
         self.denyBookPaths.setChecked(self.storage.config["denyBookPaths"])
         self.bookShadows.setChecked(self.storage.config["bookShadows"])
+        self.storeThumbnails.setChecked(self.storage.config["storeThumbnails"])
         self.defaultShelf.setCurrentIndex(self.storage.config["defaultShelf"])
         self.recoverBookshelf.setChecked(self.storage.config["recoverAutobackup"])
+        self.storeThumbnails.stateChanged.connect(self.poll_settings)
         self.bookShadows.stateChanged.connect(self.poll_settings)
         self.denyBookPaths.stateChanged.connect(self.poll_settings)
         self.recoverBookshelf.stateChanged.connect(self.poll_settings)

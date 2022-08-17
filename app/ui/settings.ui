@@ -89,8 +89,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>478</width>
-            <height>215</height>
+            <width>464</width>
+            <height>219</height>
            </rect>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -105,6 +105,13 @@
             <widget class="QCheckBox" name="denyBookPaths">
              <property name="text">
               <string>Deny book paths usage</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="storeThumbnails">
+             <property name="text">
+              <string>Store thumbnails in backup</string>
              </property>
             </widget>
            </item>
