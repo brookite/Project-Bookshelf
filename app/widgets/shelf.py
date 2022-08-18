@@ -140,8 +140,9 @@ class ShelfWidget(QWidget):
         self.clear_selection()
 
     def dragEnterEvent(self, event: QDragEnterEvent) -> None:
-        formats = event.mimeData().formats()
-        if 'application/x-bookshelf-book' in formats:
+        mimedata = event.mimeData()
+        formats = mimedata.formats()
+        if 'application/x-bookshelf-book' in formats or mimedata.hasUrls():
             event.acceptProposedAction()
 
     def dragMoveEvent(self, event: QDragMoveEvent) -> None:
@@ -163,11 +164,17 @@ class ShelfWidget(QWidget):
                 bar.setValue(bar.value() + step)
 
     def dropEvent(self, event: QDropEvent) -> None:
-        new_index = self._find_book_by_pos(event.pos())
-        old_index = self._book_index(*self._get_index_by_mime(event.mimeData()))
-        self.books[old_index].show()
-        self.replace_book(old_index, new_index)
-        event.acceptProposedAction()
+        if event.mimeData().hasUrls():
+            urls = event.mimeData().urls()
+            for url in urls:
+                if url.isLocalFile():
+                    self.owner.add_book(url.toLocalFile(), True)
+        else:
+            new_index = self._find_book_by_pos(event.pos())
+            old_index = self._book_index(*self._get_index_by_mime(event.mimeData()))
+            self.books[old_index].show()
+            self.replace_book(old_index, new_index)
+            event.acceptProposedAction()
 
     def _find_book_by_pos(self, pos):
         '''

@@ -272,18 +272,24 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             SUPPORTED_FORMATS_NAMES
         )
         for file in filenames[0]:
-            if os.path.splitext(file)[1] in SUPPORTED_FORMATS:
-                if (len(self.get_current_shelf().books) + 1) <= ShelfWidget.MAX_BOOKS_COUNT:
-                    metadata = self.add_new_book(file)
-                    if metadata:
-                        self.load_book(metadata)
-                else:
-                    QMessageBox.warning(
-                        self, tr("Limit has reached"),
-                        tr("You may place in one shelf only {} books"
-                                                          .format(ShelfWidget.MAX_BOOKS_COUNT)))
-                    break
+            self.add_book(file)
         self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
+    
+
+    def add_book(self, file, thumbnailer_call=False):
+        if os.path.splitext(file)[1] in SUPPORTED_FORMATS:
+            if (len(self.get_current_shelf().books) + 1) <= ShelfWidget.MAX_BOOKS_COUNT:
+                metadata = self.add_new_book(file)
+                if metadata:
+                    self.load_book(metadata)
+                if thumbnailer_call:
+                    self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
+            else:
+                QMessageBox.warning(
+                    self, tr("Limit has reached"),
+                    tr("You may place in one shelf only {} books"
+                                                          .format(ShelfWidget.MAX_BOOKS_COUNT)))
+
 
     def about(self):
         QMessageBox.about(self, tr("About Project Bookshelf"),
