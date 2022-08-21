@@ -277,7 +277,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     
 
     def add_book(self, file, thumbnailer_call=False):
-        if os.path.splitext(file)[1] in SUPPORTED_FORMATS:
+        if os.path.splitext(file)[1].lower() in SUPPORTED_FORMATS:
             if (len(self.get_current_shelf().books) + 1) <= ShelfWidget.MAX_BOOKS_COUNT:
                 metadata = self.add_new_book(file)
                 if metadata:

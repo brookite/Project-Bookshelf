@@ -136,7 +136,7 @@ class Thumbnailer:
                         book.update_thumbnail()
                         continue
                 ext = os.path.splitext(self.settings.config.booksrc(book.metadata))[-1]
-                if ext not in SUPPORTED_THUMBNAIL_FORMATS:
+                if ext.lower() not in SUPPORTED_THUMBNAIL_FORMATS:
                     continue
                 if ext in [".djv", ".djvu"]:
                     if DJVU_THUMBNAILES:
