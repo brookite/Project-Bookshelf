@@ -1,7 +1,7 @@
 import random
 
 from PySide6.QtCore import QRect, QTimerEvent
-from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon, QCloseEvent, QResizeEvent
+from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon, QCloseEvent, QResizeEvent, QPaintDevice
 from PySide6.QtWidgets import QMainWindow, QFileDialog,  QInputDialog, \
     QWidget, QScrollArea, QVBoxLayout, QMenu, QMessageBox, QApplication
 
@@ -51,7 +51,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.actionRemoveShelf.triggered.connect(self.remove_shelf)
         self.actionOpenRandom.triggered.connect(self.open_random_book)
         self.actionAbout.triggered.connect(self.about)
-        self.actionAbout_Qt.triggered.connect(QApplication.instance().aboutQt)
+        self.actionAbout_Qt.triggered.connect(self._app.aboutQt)
 
         self.setWindowIcon(QIcon(resolve_path("resources", "applogo.png")))
 
@@ -59,7 +59,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.__resize_timerid = 0
 
         self.thumbnailer = Thumbnailer(self.settings)
-        self.load_books()
+        self.load_books_widgets()
         self.get_current_shelf().set_background()
         self.get_current_shelf().scrollArea = self.scrollArea
         if self.settings.config["defaultShelf"] != 0:
@@ -114,7 +114,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def _tab_changed(self, index):
         self.shelf_index = index
         if not self.get_current_shelf().loaded:
-            self.load_books()
+            self.load_books_widgets()
             self.get_current_shelf().set_background()
         self.get_current_shelf().render_books()
 
@@ -123,8 +123,9 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.settings_window.show()
 
     def open_random_book(self):
-        book = random.choice(self.get_current_shelf().books)
-        book.open()
+        if len(self.get_current_shelf().books):
+            book = random.choice(self.get_current_shelf().books)
+            book.open()
 
     def remove_shelf(self):
         index = self._selected_shelf_index
@@ -180,17 +181,18 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def set_selection_mode(self, value: bool) -> None:
         self.actionSelection_mode.setChecked(value)
 
-    def load_books(self):
+    def load_books_widgets(self):
         for bookdata in self.settings.config.get_books(self.shelf_index):
-            self.load_book(bookdata)
+            self.load_book_widget(bookdata)
         self.get_current_shelf().loaded = True
         self.thumbnailer.load_thumbnails(self.get_current_shelf().books)
 
-    def load_book(self, bookdata: dict):
+    def load_book_widget(self, bookdata: dict) -> BookWidget:
         book = BookWidget(self.get_current_shelf(), self.thumbnailer)
         book.metadata = bookdata
         book.setToolTip(bookdata["name"])
         self.get_current_shelf().add_book(book)
+        return book
 
     def _form_shelf(self, shelf):
         bookshelf = QWidget()
@@ -237,7 +239,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             self.shelfs.append(shelf)
             self.tabWidget.insertTab(index, self._form_shelf(shelf), name)
 
-    def add_new_book(self, path: str):
+    def add_new_book_to_config(self, path: str):
         return self.settings.config.add_file(self.shelf_index, path)
 
     def export(self):
@@ -280,25 +282,27 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             self, tr("Adding books"), default_dir,
             SUPPORTED_FORMATS_NAMES
         )
+        books = []
         for file in filenames[0]:
-            self.add_book(file)
-        self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
-    
+            book = self.add_book(file)
+            if book:
+                books.append(book)
+        self.thumbnailer.load_thumbnails(books)
 
-    def add_book(self, file, thumbnailer_call=False):
+    def add_book(self, file, thumbnailer_call=False) -> BookWidget:
         if os.path.splitext(file)[1].lower() in SUPPORTED_FORMATS:
             if (len(self.get_current_shelf().books) + 1) <= ShelfWidget.MAX_BOOKS_COUNT:
-                metadata = self.add_new_book(file)
+                metadata = self.add_new_book_to_config(file)
                 if metadata:
-                    self.load_book(metadata)
-                if thumbnailer_call:
-                    self.thumbnailer.load_thumbnails(self.shelfs[self.shelf_index].books)
+                    book = self.load_book_widget(metadata)
+                    if thumbnailer_call:
+                        self.thumbnailer.load_thumbnails([book])
+                    return book
             else:
                 QMessageBox.warning(
                     self, tr("Limit has reached"),
                     tr("You may place in one shelf only {} books"
                                                           .format(ShelfWidget.MAX_BOOKS_COUNT)))
-
 
     def about(self):
         QMessageBox.about(self, tr("About Project Bookshelf"),

@@ -8,6 +8,7 @@ import random
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QImage, QPixmap
+from PySide6.QtWidgets import QApplication
 
 from app.storage import AppStorage
 from app.utils.path import SUPPORTED_THUMBNAIL_FORMATS
@@ -34,13 +35,21 @@ except ImportError:
 
 
 class Thumbnailer:
-    DEFAULT_THUMBNAIL_SIZE = (100, 126)
+    DEFAULT_THUMBNAIL_SIZE = (250, 315)
 
     def __init__(self, settings: AppStorage):
         self._dir = settings.thumbnail_dir
+        self.RATIO = QApplication.instance().screens()[0].devicePixelRatio()
+        self.PLATFORM_THUMBNAIL_SIZE = (100 * self.RATIO, 126 * self.RATIO)
         self._user_dir = settings.user_thumbnail_dir
         self.settings = settings
         self._tmp_ctx = None
+
+    def adjust_pixmap(self, pixmap: QPixmap) -> QPixmap:
+        if pixmap.width() != self.PLATFORM_THUMBNAIL_SIZE[0] or pixmap.height() != self.PLATFORM_THUMBNAIL_SIZE[1]:
+            pixmap = pixmap.scaled(*self.PLATFORM_THUMBNAIL_SIZE, mode=Qt.FastTransformation)
+        pixmap.setDevicePixelRatio(self.RATIO)
+        return pixmap
 
     @staticmethod
     def _random_name(length=8):
@@ -76,7 +85,7 @@ class Thumbnailer:
         img = QImage()
         img.loadFromData(stream)
         img = img.scaled(
-            100, 126, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
+            *self.DEFAULT_THUMBNAIL_SIZE, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
         return img
 
     def _gen_thumbnail_djvulibre(self, src: str) -> Optional[QImage]:
@@ -96,14 +105,14 @@ class Thumbnailer:
 
         djvu_pixel_format = djvu.decode.PixelFormatRgb()
         buf = page_job.render(djvu.decode.RENDER_COLOR, rect, rect, djvu_pixel_format)
-        img = Image.frombuffer("RGB", (width, height), buf, "raw").resize((100, 126))
+        img = Image.frombuffer("RGB", (width, height), buf, "raw").resize(self.DEFAULT_THUMBNAIL_SIZE)
         img = img.toqimage()
         img.mirror()
         return img
 
     def load_external_thumbnail(self, book: BookWidget, image_path: str):
         image_path = os.path.abspath(image_path)
-        image = QImage(image_path).scaled(100, 126)
+        image = QImage(image_path).scaled(*self.DEFAULT_THUMBNAIL_SIZE)
         name = self._hashed_name(image_path) + ".png"
         image.save(os.path.join(self.user_directory, name), "PNG")
         book.metadata["thumbnail"] = f"$DEFAULT_USER_THUMBNAIL_PATH/{name}"

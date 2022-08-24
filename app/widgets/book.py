@@ -152,15 +152,15 @@ class BookWidget(QLabel):
     def update_thumbnail(self):
         if self.metadata["thumbnail"]:
             path = self._thumbnailer.resolve_path(self.metadata["thumbnail"])
-            pixmap = QPixmap(path)
+            pixmap = self._thumbnailer.adjust_pixmap(QPixmap(path))
         else:
             pixmap = BookWidget.PIXMAP
         self._thumbnail = pixmap
         self.setPixmap(pixmap)
 
-    def set_thumbnail(self, thumbnail):
-        self._thumbnail = thumbnail
-        self.setPixmap(thumbnail)
+    def set_thumbnail(self, thumbnail: QPixmap):
+        self._thumbnail = self._thumbnailer.adjust_pixmap(thumbnail)
+        self.setPixmap(self._thumbnail)
 
     @property
     def owner(self):

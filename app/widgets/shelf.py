@@ -12,6 +12,7 @@ from app.utils.path import resolve_path
 
 class ShelfWidget(QWidget):
     BACKGROUND = None
+    BACKGROUND_DEFAULT_SIZE = (512, 167)
     MAX_BOOKS_COUNT = 512  # it may cause lags on big values
     RESIZE_COOLDOWN = 120  # milliseconds
 
@@ -43,8 +44,9 @@ class ShelfWidget(QWidget):
             path = self.owner.settings.shelf_view_path(i)
             if path and os.path.exists(path):
                 pixmap = QPixmap(path)
-                if pixmap.width() != 512 or pixmap.height() != 167:
-                    pixmap = pixmap.scaled((512, 167))
+                if pixmap.width() != self.BACKGROUND_DEFAULT_SIZE[0] \
+                        or pixmap.height() != self.BACKGROUND_DEFAULT_SIZE[1]:
+                    pixmap = pixmap.scaled(self.BACKGROUND_DEFAULT_SIZE)
         palette.setBrush(self.owner.backgroundRole(), pixmap)
         self.setPalette(palette)
 
