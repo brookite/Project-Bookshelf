@@ -4,125 +4,135 @@
 <context>
     <name></name>
     <message>
-        <location filename="../../widgets/book.py" line="40"/>
+        <location filename="../../widgets/book.py" line="42"/>
         <source>Set thumbnail</source>
         <translation>Установить эскиз</translation>
     </message>
     <message>
-        <location filename="../../widgets/book.py" line="42"/>
+        <location filename="../../widgets/book.py" line="44"/>
         <source>Reset thumbnail</source>
         <translation>Сбросить эскиз</translation>
     </message>
     <message>
-        <location filename="../../widgets/book.py" line="44"/>
+        <location filename="../../widgets/book.py" line="46"/>
         <source>Remove book</source>
         <translation>Удалить книгу</translation>
     </message>
     <message>
-        <location filename="../../widgets/book.py" line="50"/>
+        <location filename="../../widgets/book.py" line="52"/>
         <source>Open selected books</source>
         <translation>Открыть выбранные книги</translation>
     </message>
     <message>
-        <location filename="../../widgets/book.py" line="52"/>
+        <location filename="../../widgets/book.py" line="54"/>
         <source>Remove selected books</source>
         <translation>Удалить выбранные книги с полки</translation>
     </message>
     <message>
-        <location filename="../../widgets/book.py" line="61"/>
+        <location filename="../../widgets/book.py" line="63"/>
         <source>Set external thumbnails</source>
         <translation>Установить эскиз из хранилища</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="96"/>
-        <location filename="../../window.py" line="259"/>
+        <location filename="../../widgets/book.py" line="122"/>
+        <source>Book not found</source>
+        <translation>Книга не найдена</translation>
+    </message>
+    <message>
+        <location filename="../../widgets/book.py" line="124"/>
+        <source>Bookshelf couldn&apos;t find the current book. Please check whether your book exists</source>
+        <translation>Приложение не может найти данную книгу. Пожалуйста, проверьте, существует ли эта книга</translation>
+    </message>
+    <message>
+        <location filename="../../window.py" line="99"/>
+        <location filename="../../window.py" line="268"/>
         <source>Restore failed</source>
         <translation>Восстановлено завершилось с ошибкой</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="97"/>
-        <location filename="../../window.py" line="260"/>
+        <location filename="../../window.py" line="100"/>
+        <location filename="../../window.py" line="269"/>
         <source>Backup wasn&apos;t restored. Check if your backup is valid</source>
         <translation>Резервная копия не была восстановлена. Проверьте, что ваша резервная копия корректна</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="136"/>
+        <location filename="../../window.py" line="145"/>
         <source>Remove shelf</source>
         <translation>Удалить полку</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="217"/>
-        <location filename="../../window.py" line="282"/>
+        <location filename="../../window.py" line="226"/>
+        <location filename="../../window.py" line="298"/>
         <source>Limit has reached</source>
         <translation>Превышен лимит</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="218"/>
+        <location filename="../../window.py" line="227"/>
         <source>You may create only {} shelfs</source>
         <translation>Вы можете создать только {} полок</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="222"/>
+        <location filename="../../window.py" line="231"/>
         <source>Adding new shelf</source>
         <translation>Добавление новой полки</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="224"/>
+        <location filename="../../window.py" line="233"/>
         <source>Input name of your new shelf</source>
         <translation>Введите имя вашей новой полки</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="236"/>
+        <location filename="../../window.py" line="245"/>
         <source>Export backup</source>
         <translation>Экспортирование резервной копии</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="246"/>
+        <location filename="../../window.py" line="255"/>
         <source>Import backup</source>
         <translation>Импортирование резервной копии</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="250"/>
+        <location filename="../../window.py" line="259"/>
         <source>Data erase warning</source>
         <translation>Предупреждение о стирании данных</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="252"/>
+        <location filename="../../window.py" line="261"/>
         <source>Your books and all app information will be replaced by backup data. Are you sure?</source>
         <translation>Все ваши книги и настройки будут заменены данными резервной копии. Вы уверены?</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="263"/>
+        <location filename="../../window.py" line="272"/>
         <source>Restore finished</source>
         <translation>Восстановление завершено</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="265"/>
+        <location filename="../../window.py" line="274"/>
         <source>Backup has been restored successfully. Application will be closed, please open it again</source>
         <translation>Резервная копия была восстановлена. Приложение будет закрыто, пожалуйста, запустите его снова</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="271"/>
+        <location filename="../../window.py" line="280"/>
         <source>Adding books</source>
         <translation>Добавление книг</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="284"/>
+        <location filename="../../window.py" line="300"/>
         <source>You may place in one shelf only {} books</source>
         <translation>Вы можете размещать на одной полке только {} книг</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="289"/>
+        <location filename="../../window.py" line="304"/>
         <source>About Project Bookshelf</source>
         <translation>О Project Bookshelf</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="291"/>
+        <location filename="../../window.py" line="306"/>
         <source>Elegant bookshelf for your documents</source>
         <translation>Элегантная книжная полка для ваших документов</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="292"/>
+        <location filename="../../window.py" line="307"/>
         <source>Author: </source>
         <translation>Разработчик: </translation>
     </message>
@@ -203,59 +213,64 @@
         <translation>Инструменты</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="95"/>
+        <location filename="../../ui/main.ui" line="96"/>
         <source>Help</source>
         <translation>Справка</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="106"/>
+        <location filename="../../ui/main.ui" line="107"/>
         <source>Open</source>
         <translation>Открыть</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="111"/>
+        <location filename="../../ui/main.ui" line="112"/>
         <source>Export</source>
         <translation>Экспорт резервной копии</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="116"/>
+        <location filename="../../ui/main.ui" line="117"/>
         <source>Import</source>
         <translation>Импорт резервной копии</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="121"/>
+        <location filename="../../ui/main.ui" line="122"/>
         <source>Exit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="126"/>
+        <location filename="../../ui/main.ui" line="127"/>
         <source>Add new shelf</source>
         <translation>Добавить новую полку</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="131"/>
+        <location filename="../../ui/main.ui" line="132"/>
         <source>About Qt</source>
         <translation>О Qt</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="136"/>
+        <location filename="../../ui/main.ui" line="137"/>
         <source>About</source>
         <translation>О приложении</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="141"/>
+        <location filename="../../ui/main.ui" line="142"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="149"/>
+        <location filename="../../ui/main.ui" line="150"/>
         <source>Selection mode</source>
         <translation>Режим выделения</translation>
     </message>
     <message>
-        <location filename="../../ui/main.ui" line="154"/>
+        <location filename="../../ui/main.ui" line="155"/>
         <source>Remove selected shelf</source>
         <translation>Удалить выбранную полку</translation>
+    </message>
+    <message>
+        <location filename="../../ui/main.ui" line="160"/>
+        <source>Open random book</source>
+        <translation>Открыть случайную книгу</translation>
     </message>
 </context>
 <context>

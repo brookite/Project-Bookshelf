@@ -86,6 +86,7 @@
      <string>Tools</string>
     </property>
     <addaction name="actionAdd_new_shelf"/>
+    <addaction name="actionOpenRandom"/>
     <addaction name="actionRemoveShelf"/>
     <addaction name="actionSelection_mode"/>
     <addaction name="actionSettings"/>
@@ -152,6 +153,11 @@
   <action name="actionRemoveShelf">
    <property name="text">
     <string>Remove selected shelf</string>
+   </property>
+  </action>
+  <action name="actionOpenRandom">
+   <property name="text">
+    <string>Open random book</string>
    </property>
   </action>
  </widget>

@@ -238,6 +238,9 @@ class AppStorage:
         if paths:
             for path in paths:
                 tmp = pattern.replace("${{...}}", path)
+                # Windows separator compatibility (cross-platform)
+                if "\\" in tmp:
+                    tmp = tmp.replace("\\", "/")
                 if os.path.exists(tmp):
                     return tmp
         return pattern

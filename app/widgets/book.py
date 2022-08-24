@@ -1,7 +1,9 @@
+import os
+
 from PySide6.QtCore import QMimeData
 from PySide6.QtGui import QPixmap, Qt, QMouseEvent, QDrag
 from PySide6.QtWidgets import QLabel, QSizePolicy, QApplication, \
-    QMenu, QFileDialog, QGraphicsDropShadowEffect
+    QMenu, QFileDialog, QGraphicsDropShadowEffect, QMessageBox
 
 from app.utils.applocale import tr
 from app.utils.path import resolve_path, open_file, SUPPORTED_IMAGES_NAMES
@@ -113,10 +115,16 @@ class BookWidget(QLabel):
     def open(self):
         src = self._settings.config.booksrc(self.metadata)
         if "${{...}}" in src:
-            self.owner.owner.check_book_paths()
-        else:
-            open_file(src)
-            self.metadata["openCount"] += 1
+            if self.owner.owner.check_book_paths():
+                return
+        if not os.path.exists(src):
+            QMessageBox.information(self,
+                                    tr("Book not found"),
+                                    tr("Bookshelf couldn't find the current book. "
+                                        "Please check whether your book exists"))
+            return
+        open_file(src)
+        self.metadata["openCount"] += 1
 
     def select(self):
         if not self.is_selected():

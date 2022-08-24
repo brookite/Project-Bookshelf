@@ -1,3 +1,5 @@
+import random
+
 from PySide6.QtCore import QRect, QTimerEvent
 from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon, QCloseEvent, QResizeEvent
 from PySide6.QtWidgets import QMainWindow, QFileDialog,  QInputDialog, \
@@ -47,6 +49,7 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.actionExit.triggered.connect(self.close)
         self.actionAdd_new_shelf.triggered.connect(self.add_shelf)
         self.actionRemoveShelf.triggered.connect(self.remove_shelf)
+        self.actionOpenRandom.triggered.connect(self.open_random_book)
         self.actionAbout.triggered.connect(self.about)
         self.actionAbout_Qt.triggered.connect(QApplication.instance().aboutQt)
 
@@ -105,6 +108,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             if is_all_unexists:
                 self._tmp_bookpathdialog = BookPathsSetupWindow(self, self.settings)
                 self._tmp_bookpathdialog.exec()
+                return True
+        return False
 
     def _tab_changed(self, index):
         self.shelf_index = index
@@ -116,6 +121,10 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def open_settings(self):
         self.settings_window = SettingsWindow(self, self.shelf_index, self.settings)
         self.settings_window.show()
+
+    def open_random_book(self):
+        book = random.choice(self.get_current_shelf().books)
+        book.open()
 
     def remove_shelf(self):
         index = self._selected_shelf_index
