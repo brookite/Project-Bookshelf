@@ -47,7 +47,7 @@ class Thumbnailer:
 
     def adjust_pixmap(self, pixmap: QPixmap) -> QPixmap:
         if pixmap.width() != self.PLATFORM_THUMBNAIL_SIZE[0] or pixmap.height() != self.PLATFORM_THUMBNAIL_SIZE[1]:
-            pixmap = pixmap.scaled(*self.PLATFORM_THUMBNAIL_SIZE, mode=Qt.FastTransformation)
+            pixmap = pixmap.scaled(*self.PLATFORM_THUMBNAIL_SIZE, mode=Qt.SmoothTransformation)
         pixmap.setDevicePixelRatio(self.RATIO)
         return pixmap
 
