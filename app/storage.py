@@ -265,8 +265,9 @@ class AppStorage:
         for bookpath in self.book_paths:
             bookpath = os.path.abspath(bookpath)
             if commonpath([bookpath, os.path.abspath(path)]) == bookpath:
-                return os.path.abspath(path).replace(bookpath, "$BOOKS_PATH")
-        return self.fix_separator(os.path.abspath(path))
+                return self.fix_separator(
+                    os.path.abspath(path).replace(bookpath, "$BOOKS_PATH"))
+        return os.path.normpath(os.path.abspath(path))
 
     def get_var(self, var) -> Union[str, Tuple[str]]:
         if var == "DEFAULT_THUMBNAIL_PATH":
