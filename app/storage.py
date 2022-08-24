@@ -75,12 +75,16 @@ class BooksConfig(dict):
     def convert_to_bookpaths(self):
         for shelf in self["shelfs"]:
             for book in shelf["books"]:
-                book["src"] = self._storage.to_book_path(self.booksrc(book))
+                src = self._storage.to_book_path(self.booksrc(book))
+                if "${{...}}" not in src:
+                    book["src"] = src
 
     def convert_to_explicit_paths(self):
         for shelf in self["shelfs"]:
             for book in shelf["books"]:
-                book["src"] = self.booksrc(book)
+                src = self.booksrc(book)
+                if "${{...}}" not in src:
+                    book["src"] = src
 
     def remove_book(self, metadata: dict, shelf_index=None):
         if shelf_index is None:
@@ -238,12 +242,16 @@ class AppStorage:
         if paths:
             for path in paths:
                 tmp = pattern.replace("${{...}}", path)
-                # Windows separator compatibility (cross-platform)
-                if "\\" in tmp:
-                    tmp = tmp.replace("\\", "/")
                 if os.path.exists(tmp):
-                    return tmp
-        return pattern
+                    return os.path.normpath(tmp)
+        return pattern if "${{...}}" in pattern else os.path.normpath(pattern)
+
+    def fix_separator(self, path: str) -> str:
+        '''
+        Converts path to '/' separator (platform-independent)
+        '''
+        path = path.split(os.sep)
+        return "/".join(path)
 
     def is_ambiguous_pattern(self, pattern):
         flag = False
@@ -258,7 +266,7 @@ class AppStorage:
             bookpath = os.path.abspath(bookpath)
             if commonpath([bookpath, os.path.abspath(path)]) == bookpath:
                 return os.path.abspath(path).replace(bookpath, "$BOOKS_PATH")
-        return os.path.abspath(path)
+        return self.fix_separator(os.path.abspath(path))
 
     def get_var(self, var) -> Union[str, Tuple[str]]:
         if var == "DEFAULT_THUMBNAIL_PATH":
