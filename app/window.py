@@ -277,7 +277,12 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             self.close()
 
     def add_books(self):
-        default_dir = "" if len(self.settings.book_paths) == 0 else self.settings.book_paths[0]
+        default_dir = ""
+        for directory in self.settings.book_paths:
+            if os.path.isdir(directory):
+                default_dir = directory
+                break
+
         filenames = QFileDialog.getOpenFileNames(
             self, tr("Adding books"), default_dir,
             SUPPORTED_FORMATS_NAMES
