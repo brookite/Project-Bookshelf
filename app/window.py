@@ -1,9 +1,9 @@
 import random
 
 from PySide6.QtCore import QRect, QTimerEvent
-from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon, QCloseEvent, QResizeEvent, QPaintDevice
+from PySide6.QtGui import Qt, QKeyEvent, QCursor, QIcon, QCloseEvent, QResizeEvent
 from PySide6.QtWidgets import QMainWindow, QFileDialog,  QInputDialog, \
-    QWidget, QScrollArea, QVBoxLayout, QMenu, QMessageBox, QApplication
+    QWidget, QScrollArea, QVBoxLayout, QMenu, QMessageBox
 
 from app.appinfo import VERSION_NAME
 from app.settings import SettingsWindow, BookPathsSetupWindow
@@ -64,6 +64,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.get_current_shelf().scrollArea = self.scrollArea
         if self.settings.config["defaultShelf"] != 0:
             self.tabWidget.setCurrentIndex(self.settings.config["defaultShelf"])
+        if self.settings.config["shelfs"][0]["name"] != "$DEFAULT_NAME":
+            self.tabWidget.setTabText(0, self.settings.config["shelfs"][0]["name"])
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.settings.save()
@@ -127,6 +129,24 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             book = random.choice(self.get_current_shelf().books)
             book.open()
 
+    def rename_shelf(self):
+        old_name = self.get_current_shelf().metadata["name"]
+        if old_name == "$DEFAULT_NAME":
+            old_name = tr("My books")
+        name, success = QInputDialog.getText(
+            self,
+            tr("Rename shelf"),
+            tr("Input new name of your shelf"),
+            text=old_name
+        )
+        if self.shelf_index == 0 and not name:
+            name = "$DEFAULT_NAME"
+        if success and name:
+            self.get_current_shelf().metadata["name"] = name
+            display_name = name if name != "$DEFAULT_NAME" else tr("My books")
+            self.tabWidget.tabBar().setTabText(self.shelf_index, display_name)
+            self.settings.config.save()
+
     def remove_shelf(self):
         index = self._selected_shelf_index
         if index == -1:
@@ -143,6 +163,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
     def _tab_menu(self, index):
         self._selected_shelf_index = index
         menu = QMenu()
+        renameAction = menu.addAction(tr("Rename shelf"))
+        renameAction.triggered.connect(self.rename_shelf)
         removeAction = menu.addAction(tr("Remove shelf"))
         removeAction.triggered.connect(self.remove_shelf)
         menu.exec(QCursor.pos())

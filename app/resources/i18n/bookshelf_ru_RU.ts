@@ -44,95 +44,112 @@
         <translation>Приложение не может найти данную книгу. Пожалуйста, проверьте, существует ли эта книга</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="99"/>
-        <location filename="../../window.py" line="268"/>
+        <location filename="../../window.py" line="101"/>
+        <location filename="../../window.py" line="290"/>
         <source>Restore failed</source>
         <translation>Восстановлено завершилось с ошибкой</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="100"/>
-        <location filename="../../window.py" line="269"/>
+        <location filename="../../window.py" line="102"/>
+        <location filename="../../window.py" line="291"/>
         <source>Backup wasn&apos;t restored. Check if your backup is valid</source>
         <translation>Резервная копия не была восстановлена. Проверьте, что ваша резервная копия корректна</translation>
     </message>
     <message>
+        <location filename="../../window.py" line="135"/>
+        <location filename="../../window.py" line="164"/>
+        <source>Rename shelf</source>
+        <translation>Переименовать полку</translation>
+    </message>
+    <message>
+        <location filename="../../window.py" line="136"/>
+        <source>Input new name of your shelf</source>
+        <translation>Введите новое имя для Вашей полки</translation>
+    </message>
+    <message>
+        <location filename="../../window.py" line="139"/>
         <location filename="../../window.py" line="145"/>
+        <source>My books</source>
+        <translation>Мои книги</translation>
+    </message>
+    <message>
+        <location filename="../../window.py" line="166"/>
         <source>Remove shelf</source>
         <translation>Удалить полку</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="226"/>
-        <location filename="../../window.py" line="298"/>
+        <location filename="../../window.py" line="248"/>
+        <location filename="../../window.py" line="328"/>
         <source>Limit has reached</source>
         <translation>Превышен лимит</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="227"/>
+        <location filename="../../window.py" line="249"/>
         <source>You may create only {} shelfs</source>
         <translation>Вы можете создать только {} полок</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="231"/>
+        <location filename="../../window.py" line="253"/>
         <source>Adding new shelf</source>
         <translation>Добавление новой полки</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="233"/>
+        <location filename="../../window.py" line="255"/>
         <source>Input name of your new shelf</source>
         <translation>Введите имя вашей новой полки</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="245"/>
+        <location filename="../../window.py" line="267"/>
         <source>Export backup</source>
         <translation>Экспортирование резервной копии</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="255"/>
+        <location filename="../../window.py" line="277"/>
         <source>Import backup</source>
         <translation>Импортирование резервной копии</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="259"/>
+        <location filename="../../window.py" line="281"/>
         <source>Data erase warning</source>
         <translation>Предупреждение о стирании данных</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="261"/>
+        <location filename="../../window.py" line="283"/>
         <source>Your books and all app information will be replaced by backup data. Are you sure?</source>
         <translation>Все ваши книги и настройки будут заменены данными резервной копии. Вы уверены?</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="272"/>
+        <location filename="../../window.py" line="294"/>
         <source>Restore finished</source>
         <translation>Восстановление завершено</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="274"/>
+        <location filename="../../window.py" line="296"/>
         <source>Backup has been restored successfully. Application will be closed, please open it again</source>
         <translation>Резервная копия была восстановлена. Приложение будет закрыто, пожалуйста, запустите его снова</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="280"/>
+        <location filename="../../window.py" line="307"/>
         <source>Adding books</source>
         <translation>Добавление книг</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="300"/>
+        <location filename="../../window.py" line="330"/>
         <source>You may place in one shelf only {} books</source>
         <translation>Вы можете размещать на одной полке только {} книг</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="304"/>
+        <location filename="../../window.py" line="333"/>
         <source>About Project Bookshelf</source>
         <translation>О Project Bookshelf</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="306"/>
+        <location filename="../../window.py" line="335"/>
         <source>Elegant bookshelf for your documents</source>
         <translation>Элегантная книжная полка для ваших документов</translation>
     </message>
     <message>
-        <location filename="../../window.py" line="307"/>
+        <location filename="../../window.py" line="336"/>
         <source>Author: </source>
         <translation>Разработчик: </translation>
     </message>
