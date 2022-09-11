@@ -32,7 +32,9 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         self.setupUi(self)
         self.shelfs = []
         self.load_shelfs()
+        # common selected shelf index (this tab)
         self.shelf_index = 0
+        # selected shelf index for user selection (not only this tab)
         self._selected_shelf_index = -1
         self.scrollArea.setWidget(self.get_current_shelf())
         self.get_current_shelf().scrollbar = self.scrollArea.verticalScrollBar()
@@ -130,7 +132,8 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             book.open()
 
     def rename_shelf(self):
-        old_name = self.get_current_shelf().metadata["name"]
+        index = self._selected_shelf_index
+        old_name = self.shelfs[index].metadata["name"]
         if old_name == "$DEFAULT_NAME":
             old_name = tr("My books")
         name, success = QInputDialog.getText(
@@ -142,10 +145,11 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if self.shelf_index == 0 and not name:
             name = "$DEFAULT_NAME"
         if success and name:
-            self.get_current_shelf().metadata["name"] = name
+            self.shelfs[index].metadata["name"] = name
             display_name = name if name != "$DEFAULT_NAME" else tr("My books")
-            self.tabWidget.tabBar().setTabText(self.shelf_index, display_name)
+            self.tabWidget.tabBar().setTabText(self._selected_shelf_index, display_name)
             self.settings.config.save()
+        self._selected_shelf_index = -1
 
     def remove_shelf(self):
         index = self._selected_shelf_index
