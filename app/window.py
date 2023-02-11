@@ -69,7 +69,10 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         if self.settings.config["shelfs"][0]["name"] != "$DEFAULT_NAME":
             self.tabWidget.setTabText(0, self.settings.config["shelfs"][0]["name"])
 
+        self.restore_geometry()
+
     def closeEvent(self, event: QCloseEvent) -> None:
+        self.store_geometry()
         self.settings.save()
         filename = self.settings.config["autobackupPath"]
         if os.path.exists(os.path.dirname(filename)) and filename.strip():
@@ -91,6 +94,13 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
             for shelf in self.shelfs:
                 shelf.row_capacity = self.size().width() // 128
             self.get_current_shelf().render_books()
+
+    def store_geometry(self):
+        self.settings.config["geometry"] = [self.x(), self.y(), self.width(), self.height()]
+
+    def restore_geometry(self):
+        if "geometry" in self.settings.config:
+            self.setGeometry(*self.settings.config["geometry"])
 
     def check_autorecover(self):
         if self.settings.config["recoverAutobackup"]:

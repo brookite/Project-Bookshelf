@@ -194,7 +194,12 @@ class AppStorage:
                         zipobj.write(filepath, zippath)
 
     def restore(self, backup_path, save_thumbnails=False) -> bool:
-        oldBackupPath = self.config["autobackupPath"]
+        restore_keys = {
+            "autobackupPath": self.config["autobackupPath"]
+        }
+        if "geometry" in self.config:
+            restore_keys["geometry"] = self.config["geometry"]
+
         try:
             if commonpath(
                     [os.path.abspath(backup_path), self.root]) == self.root:
@@ -214,7 +219,8 @@ class AppStorage:
                 self.create_files()
                 self.config = BooksConfig(self, os.path.join(self.root, "books.json"))
                 self.book_paths = self._read_book_paths()
-                self.config["autobackupPath"] = oldBackupPath
+                for key, value in restore_keys.items():
+                    self.config[key] = value
                 self.config.save()
                 return True
         except Exception:
