@@ -41,6 +41,8 @@ class BookWidget(QLabel):
         menu = QMenu(self)
         thumbnailAction = menu.addAction(tr("Set thumbnail"))
         thumbnailAction.triggered.connect(self.set_external_thumbnail)
+        thumbnailAction = menu.addAction(tr("Open folder"))
+        thumbnailAction.triggered.connect(self.open_folder)
         thumbnailAction = menu.addAction(tr("Reset thumbnail"))
         thumbnailAction.triggered.connect(self.reset_thumbnail)
         removeAction = menu.addAction(tr("Remove book"))
@@ -57,6 +59,12 @@ class BookWidget(QLabel):
 
     def reset_thumbnail(self):
         self._thumbnailer.reload_thumbnail(self)
+
+    def open_folder(self):
+        path = self.owner.owner.settings.resolve_env_path(self.metadata["src"])
+        path = os.path.dirname(path)
+        if os.path.exists(path):
+            open_file(path)
 
     def set_external_thumbnail(self):
         filename = QFileDialog.getOpenFileName(
