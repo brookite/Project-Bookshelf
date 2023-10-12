@@ -349,6 +349,6 @@ class BookshelfWindow(QMainWindow, Ui_Bookshelf):
         QMessageBox.about(self, tr("About Project Bookshelf"),
                                 '<p><b>' + f'Project Bookshelf {VERSION_NAME}' + '</b></p>'
                                  + tr('Elegant bookshelf for your documents') + '<br>'
-                                 + tr('Author: ') + "Brookit, 2022"
+                                 + tr('Author: ') + "Brookit, 2023"
                                  + '<br><a href="https://github.com/brookite">GitHub</a>')
 

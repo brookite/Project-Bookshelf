@@ -33,6 +33,11 @@
         <source>Set external thumbnails</source>
         <translation>Установить эскиз из хранилища</translation>
     </message>
+	<message>
+        <location filename="../../widgets/book.py" line="63"/>
+        <source>Open folder</source>
+        <translation>Открыть папку</translation>
+    </message>
     <message>
         <location filename="../../widgets/book.py" line="122"/>
         <source>Book not found</source>
