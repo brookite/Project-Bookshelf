@@ -171,6 +171,7 @@ class ShelfWidget(QWidget):
             for url in urls:
                 if url.isLocalFile():
                     self.owner.add_book(url.toLocalFile(), True)
+                    self.replace_book(len(self.books) - 1, self._find_book_by_pos(event.pos()))
         else:
             new_index = self._find_book_by_pos(event.pos())
             old_index = self._book_index(*self._get_index_by_mime(event.mimeData()))
